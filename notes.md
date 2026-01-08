@@ -1,0 +1,1 @@
+This is the first assignment. This note document serves to demonstrate that the repository is working.
