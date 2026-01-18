@@ -39,6 +39,68 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        resetBoard(ChessGame.TeamColor.WHITE);
+        resetBoard(ChessGame.TeamColor.BLACK);
+        for (int row = 3; row <= 6; row++) {
+            for (int col = 1; row <= 8; row++)
+                squares[row - 1][col - 1] = null;
+        }
+    }
+
+    private void resetBoard(ChessGame.TeamColor pieceColor) {
+        resetBoard(pieceColor, ChessPiece.PieceType.PAWN);
+        resetBoard(pieceColor, ChessPiece.PieceType.ROOK);
+        resetBoard(pieceColor, ChessPiece.PieceType.KNIGHT);
+        resetBoard(pieceColor, ChessPiece.PieceType.BISHOP);
+        resetBoard(pieceColor, ChessPiece.PieceType.QUEEN);
+        resetBoard(pieceColor, ChessPiece.PieceType.KING);
+    }
+
+    private void resetBoard(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        for (ChessPosition startPosition : getStartPositions(pieceColor, type)) {
+            addPiece(startPosition, new ChessPiece(pieceColor, type));
+        }
+    }
+
+    private ChessPosition[] getStartPositions(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        ChessPosition[] startPositions;
+        switch (type) {
+            case PAWN:
+                startPositions = new ChessPosition[8];
+                for (int i=0; i<8; i++) {
+                    startPositions[i] = new ChessPosition(rowFlippedByColor(2, pieceColor), i + 1);
+                }
+                break;
+            case ROOK:
+                startPositions = new ChessPosition[2];
+                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 1);
+                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 8);
+                break;
+            case KNIGHT:
+                startPositions = new ChessPosition[2];
+                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 2);
+                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 7);
+                break;
+            case BISHOP:
+                startPositions = new ChessPosition[2];
+                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 3);
+                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 6);
+                break;
+            case QUEEN:
+                startPositions = new ChessPosition[]{ new ChessPosition(rowFlippedByColor(1, pieceColor), 4) };
+                break;
+            case KING:
+                startPositions = new ChessPosition[]{ new ChessPosition(rowFlippedByColor(1, pieceColor), 5) };
+                break;
+            default:
+                startPositions = new ChessPosition[]{ null };
+        }
+
+        return startPositions;
+    }
+
+    private int rowFlippedByColor(int row, ChessGame.TeamColor pieceColor) {
+        if (pieceColor == ChessGame.TeamColor.WHITE) return row;
+        else return 9 - row;
     }
 }
