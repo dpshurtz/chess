@@ -124,7 +124,9 @@ public class ChessPiece {
                 if (myPosition.getRow() == board.rowFlippedByColor(2, pieceColor)) {
                     range = 2;
                 }
-                else range = 1;
+                else {
+                    range = 1;
+                }
 
                 ChessPiece leftAttack, rightAttack;
 

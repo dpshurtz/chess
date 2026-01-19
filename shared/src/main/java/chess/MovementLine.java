@@ -68,7 +68,9 @@ public class MovementLine {
 
         for (ChessPosition destination : positionSequence) {
             // If the line is blocked or out of bounds, do not include the rest of the line
-            if (blocked || board.outOfBounds(destination)) break;
+            if (blocked || board.outOfBounds(destination)) {
+                break;
+            }
 
             ChessPiece targetPiece = board.getPiece(destination);
             if (targetPiece == null) {
@@ -82,7 +84,9 @@ public class MovementLine {
             else {
                 // The target square contains an enemy piece, so further movement is impossible
                 // However, if attacks are allowed along this line, capturing the enemy piece is valid
-                if (noAttack) break;
+                if (noAttack) {
+                    break;
+                }
                 filteredDestinations.add(destination);
                 blocked = true;
             }
