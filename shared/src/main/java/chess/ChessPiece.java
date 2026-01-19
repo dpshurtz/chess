@@ -54,68 +54,40 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> validMoves = new HashSet<>();
         HashSet<MovementLine.Direction> directions = new HashSet<>();
-        HashSet<MovementLine> movementLines = new HashSet<>();
-        HashSet<ChessPosition> validDestinations = new HashSet<>();
         int range = 0;
 
         switch (type) {
             case KING:
                 // The king moves one square in any of the 8 standard directions
                 range = 1;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
+                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
+                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
                 break;
 
             case QUEEN:
                 // The queen moves up to 7 squares in any of the 8 standard directions
                 range = 7;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
+                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
+                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
                 break;
 
             case BISHOP:
                 // The bishop moves up to 7 squares along any diagonal
                 range = 7;
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
+                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
                 break;
 
             case KNIGHT:
                 // The knight moves a single time in any of its 8 unique L-shaped directions
                 range = 1;
-                directions.add(MovementLine.Direction.M1_KNIGHT);
-                directions.add(MovementLine.Direction.M2_KNIGHT);
-                directions.add(MovementLine.Direction.M3_KNIGHT);
-                directions.add(MovementLine.Direction.M4_KNIGHT);
-                directions.add(MovementLine.Direction.M5_KNIGHT);
-                directions.add(MovementLine.Direction.M6_KNIGHT);
-                directions.add(MovementLine.Direction.M7_KNIGHT);
-                directions.add(MovementLine.Direction.M8_KNIGHT);
+                addDirectionsByType(directions, MovementLine.MoveType.KNIGHT);
                 break;
 
             case ROOK:
                 // The rook moves up to 7 squares vertically or horizontally
                 range = 7;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
+                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
                 break;
 
             case PAWN:
@@ -161,10 +133,28 @@ public class ChessPiece {
                 break;
         }
 
+        return getMovesByDirections(board, myPosition, directions, range);
+    }
+
+    /**
+     * Calculates all the positions a chess piece can move to
+     * based on the direction and range parameters
+     *
+     * @param board Current state of the board
+     * @param origin Piece's current location
+     * @param directions Set of directions that a piece can move
+     * @param range Range of the piece's movement
+     * @return Collection of valid moves
+     */
+    private Collection<ChessMove> getMovesByDirections(ChessBoard board, ChessPosition origin, HashSet<MovementLine.Direction> directions, int range) {
+        Collection<ChessMove> validMoves = new HashSet<>();
+        HashSet<MovementLine> movementLines = new HashSet<>();
+        HashSet<ChessPosition> validDestinations = new HashSet<>();
+
         if (type != PieceType.PAWN) {
             // Generates movement lines based on directions available to the piece
             for (MovementLine.Direction direction : directions) {
-                movementLines.add(new MovementLine(myPosition, direction, range));
+                movementLines.add(new MovementLine(origin, direction, range));
             }
 
             // Filters blocked locations along each line and compiles all valid destinations
@@ -174,7 +164,7 @@ public class ChessPiece {
 
             // Creates moves based on the valid destinations
             for (ChessPosition destination : validDestinations) {
-                validMoves.add(new ChessMove(myPosition, destination, null));
+                validMoves.add(new ChessMove(origin, destination, null));
             }
         }
 
@@ -184,10 +174,10 @@ public class ChessPiece {
             for (MovementLine.Direction direction : directions) {
                 // Pawns may only attack along diagonals
                 if (direction != MovementLine.Direction.UP && direction != MovementLine.Direction.DOWN) {
-                    movementLines.add(new MovementLine(myPosition, direction, range));
+                    movementLines.add(new MovementLine(origin, direction, range));
                 }
                 else {
-                    movementLines.add(new MovementLine(myPosition, direction, range, true));
+                    movementLines.add(new MovementLine(origin, direction, range, true));
                 }
             }
 
@@ -200,18 +190,52 @@ public class ChessPiece {
             for (ChessPosition destination : validDestinations) {
                 // If a pawn reaches the back rank, it must be promoted
                 if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
-                    validMoves.add(new ChessMove(myPosition, destination, null));
+                    validMoves.add(new ChessMove(origin, destination, null));
                 }
                 else {
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
+                    validMoves.add(new ChessMove(origin, destination, PieceType.QUEEN));
+                    validMoves.add(new ChessMove(origin, destination, PieceType.BISHOP));
+                    validMoves.add(new ChessMove(origin, destination, PieceType.KNIGHT));
+                    validMoves.add(new ChessMove(origin, destination, PieceType.ROOK));
                 }
             }
         }
-
         return validMoves;
+    }
+
+    /**
+     * Adds specific directions to a set given a certain type of movement
+     *
+     * @param directions Set to which the movement directions will be added
+     * @param moveType The type of movement options to add
+     */
+    private void addDirectionsByType(HashSet<MovementLine.Direction> directions, MovementLine.MoveType moveType) {
+        switch (moveType) {
+            case ORTHOGONAL:
+                directions.add(MovementLine.Direction.UP);
+                directions.add(MovementLine.Direction.DOWN);
+                directions.add(MovementLine.Direction.LEFT);
+                directions.add(MovementLine.Direction.RIGHT);
+                break;
+
+            case DIAGONAL:
+                directions.add(MovementLine.Direction.NE);
+                directions.add(MovementLine.Direction.NW);
+                directions.add(MovementLine.Direction.SE);
+                directions.add(MovementLine.Direction.SW);
+                break;
+
+            case KNIGHT:
+                directions.add(MovementLine.Direction.M1_KNIGHT);
+                directions.add(MovementLine.Direction.M2_KNIGHT);
+                directions.add(MovementLine.Direction.M3_KNIGHT);
+                directions.add(MovementLine.Direction.M4_KNIGHT);
+                directions.add(MovementLine.Direction.M5_KNIGHT);
+                directions.add(MovementLine.Direction.M6_KNIGHT);
+                directions.add(MovementLine.Direction.M7_KNIGHT);
+                directions.add(MovementLine.Direction.M8_KNIGHT);
+                break;
+        }
     }
 
     @Override

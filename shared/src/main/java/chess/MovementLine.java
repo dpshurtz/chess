@@ -115,4 +115,14 @@ public class MovementLine {
         M7_KNIGHT,
         M8_KNIGHT
     }
+
+    /**
+     * The various types of movement possible for chess pieces
+     */
+    public enum MoveType {
+        ORTHOGONAL,
+        DIAGONAL,
+        KNIGHT,
+        PAWN
+    }
 }
