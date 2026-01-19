@@ -45,12 +45,9 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
+        squares = new ChessPiece[8][8];
         resetTeam(ChessGame.TeamColor.WHITE);
         resetTeam(ChessGame.TeamColor.BLACK);
-        for (int row = 3; row <= 6; row++) {
-            for (int col = 1; row <= 8; row++)
-                squares[row - 1][col - 1] = null;
-        }
     }
 
     private void resetTeam(ChessGame.TeamColor pieceColor) {
@@ -130,5 +127,12 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(squares);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "squares=" + Arrays.deepToString(squares) +
+                '}';
     }
 }
