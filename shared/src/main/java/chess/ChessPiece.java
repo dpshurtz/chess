@@ -54,8 +54,10 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> validMoves = new HashSet<ChessMove>();
-        int range;
         HashSet<MovementLine.Direction> directions = new HashSet<MovementLine.Direction>();
+        HashSet<MovementLine> movementLines = new HashSet<MovementLine>();
+        HashSet<ChessPosition> validDestinations = new HashSet<ChessPosition>();
+        int range = 0;
 
         switch (type) {
             case PAWN:
@@ -89,6 +91,7 @@ public class ChessPiece {
                     }
                 }
                 break;
+
             case ROOK:
                 range = 7;
                 directions.add(MovementLine.Direction.UP);
@@ -96,6 +99,7 @@ public class ChessPiece {
                 directions.add(MovementLine.Direction.LEFT);
                 directions.add(MovementLine.Direction.RIGHT);
                 break;
+
             case KNIGHT:
                 range = 1;
                 directions.add(MovementLine.Direction.M1_KNIGHT);
@@ -107,6 +111,7 @@ public class ChessPiece {
                 directions.add(MovementLine.Direction.M7_KNIGHT);
                 directions.add(MovementLine.Direction.M8_KNIGHT);
                 break;
+
             case BISHOP:
                 range = 7;
                 directions.add(MovementLine.Direction.NE);
@@ -114,6 +119,7 @@ public class ChessPiece {
                 directions.add(MovementLine.Direction.SE);
                 directions.add(MovementLine.Direction.SW);
                 break;
+
             case QUEEN:
                 range = 7;
                 directions.add(MovementLine.Direction.UP);
@@ -125,6 +131,7 @@ public class ChessPiece {
                 directions.add(MovementLine.Direction.SE);
                 directions.add(MovementLine.Direction.SW);
                 break;
+
             case KING:
                 range = 1;
                 directions.add(MovementLine.Direction.UP);
@@ -136,7 +143,22 @@ public class ChessPiece {
                 directions.add(MovementLine.Direction.SE);
                 directions.add(MovementLine.Direction.SW);
                 break;
+
             default:
+        }
+
+        for (MovementLine.Direction direction : directions) {
+            movementLines.add(new MovementLine(myPosition, direction, range));
+        }
+
+        for (MovementLine movementLine : movementLines) {
+            validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
+        }
+
+        if (type != PieceType.PAWN) {
+            for (ChessPosition destination : validDestinations) {
+                validMoves.add(new ChessMove(myPosition, destination, null));
+            }
         }
 
         return validMoves;

@@ -9,7 +9,7 @@ public class MovementLine {
 
     List<ChessPosition> positionSequence = new ArrayList<ChessPosition>();
 
-    public MovementLine(ChessPosition origin, Direction direction){
+    public MovementLine(ChessPosition origin, Direction direction, int range){
 
     }
     
@@ -21,7 +21,7 @@ public class MovementLine {
         return positionSequence.get(index);
     }
 
-    private Collection<ChessPosition> filterBlockedDestinations(ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public Collection<ChessPosition> filterBlockedDestinations(ChessBoard board, ChessGame.TeamColor pieceColor) {
         Collection<ChessPosition> filteredDestinations = new HashSet<ChessPosition>();
         boolean blocked = false;
         for (ChessPosition destination : positionSequence) {
