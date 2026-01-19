@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.HashSet;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -64,44 +66,37 @@ public class ChessBoard {
         }
     }
 
-    private ChessPosition[] getStartPositions(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        ChessPosition[] startPositions;
+    private HashSet<ChessPosition> getStartPositions(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        HashSet<ChessPosition> startPositions = new HashSet<ChessPosition>();
         switch (type) {
             case KING:
-                startPositions = new ChessPosition[]{ new ChessPosition(rowFlippedByColor(1, pieceColor), 5) };
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 5));
                 break;
 
             case QUEEN:
-                startPositions = new ChessPosition[]{ new ChessPosition(rowFlippedByColor(1, pieceColor), 4) };
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 4));
                 break;
 
             case BISHOP:
-                startPositions = new ChessPosition[2];
-                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 3);
-                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 6);
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 3));
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 6));
                 break;
 
             case KNIGHT:
-                startPositions = new ChessPosition[2];
-                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 2);
-                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 7);
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 2));
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 7));
                 break;
 
             case ROOK:
-                startPositions = new ChessPosition[2];
-                startPositions[0] = new ChessPosition(rowFlippedByColor(1, pieceColor), 1);
-                startPositions[1] = new ChessPosition(rowFlippedByColor(1, pieceColor), 8);
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 1));
+                startPositions.add(new ChessPosition(rowFlippedByColor(1, pieceColor), 8));
                 break;
 
             case PAWN:
-                startPositions = new ChessPosition[8];
-                for (int i=0; i<8; i++) {
-                    startPositions[i] = new ChessPosition(rowFlippedByColor(2, pieceColor), i + 1);
+                for (int i = 1; i <= 8; i++) {
+                    startPositions.add(new ChessPosition(rowFlippedByColor(2, pieceColor), i));
                 }
                 break;
-
-            default:
-                startPositions = new ChessPosition[]{ null };
         }
 
         return startPositions;

@@ -143,8 +143,6 @@ public class ChessPiece {
                     }
                 }
                 break;
-
-            default:
         }
 
         for (MovementLine.Direction direction : directions) {
