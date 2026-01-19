@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
+import chess.MovementLine.MoveType;
+import chess.MovementLine.Direction;
+
 /**
  * Represents a single chess piece
  * <p>
@@ -54,40 +57,40 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        HashSet<MovementLine.Direction> directions = new HashSet<>();
+        HashSet<Direction> directions = new HashSet<>();
         int range = 0;
 
         switch (type) {
             case KING:
                 // The king moves one square in any of the 8 standard directions
                 range = 1;
-                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
-                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
+                addDirectionsByType(directions, MoveType.ORTHOGONAL);
+                addDirectionsByType(directions, MoveType.DIAGONAL);
                 break;
 
             case QUEEN:
                 // The queen moves up to 7 squares in any of the 8 standard directions
                 range = 7;
-                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
-                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
+                addDirectionsByType(directions, MoveType.ORTHOGONAL);
+                addDirectionsByType(directions, MoveType.DIAGONAL);
                 break;
 
             case BISHOP:
                 // The bishop moves up to 7 squares along any diagonal
                 range = 7;
-                addDirectionsByType(directions, MovementLine.MoveType.DIAGONAL);
+                addDirectionsByType(directions, MoveType.DIAGONAL);
                 break;
 
             case KNIGHT:
                 // The knight moves a single time in any of its 8 unique L-shaped directions
                 range = 1;
-                addDirectionsByType(directions, MovementLine.MoveType.KNIGHT);
+                addDirectionsByType(directions, MoveType.KNIGHT);
                 break;
 
             case ROOK:
                 // The rook moves up to 7 squares vertically or horizontally
                 range = 7;
-                addDirectionsByType(directions, MovementLine.MoveType.ORTHOGONAL);
+                addDirectionsByType(directions, MoveType.ORTHOGONAL);
                 break;
 
             case PAWN:
@@ -104,30 +107,30 @@ public class ChessPiece {
 
                 // If the pawn is white, movement must increase the row number
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
-                    directions.add(MovementLine.Direction.UP);
+                    directions.add(Direction.UP);
 
                     // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
-                        directions.add(MovementLine.Direction.NW);
+                        directions.add(Direction.NW);
                     }
                     if (rightAttack != null && rightAttack.getTeamColor() != pieceColor) {
-                        directions.add(MovementLine.Direction.NE);
+                        directions.add(Direction.NE);
                     }
                 }
                 // If the pawn is black, movement must decrease the row number
                 else {
-                    directions.add(MovementLine.Direction.DOWN);
+                    directions.add(Direction.DOWN);
 
                     // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
-                        directions.add(MovementLine.Direction.SW);
+                        directions.add(Direction.SW);
                     }
                     if (rightAttack != null && rightAttack.getTeamColor() != pieceColor) {
-                        directions.add(MovementLine.Direction.SE);
+                        directions.add(Direction.SE);
                     }
                 }
                 break;
@@ -141,20 +144,20 @@ public class ChessPiece {
      * based on the direction and range parameters
      *
      * @param board Current state of the board
-     * @param origin Piece's current location
+     * @param myPosition Piece's current location
      * @param directions Set of directions that a piece can move
      * @param range Range of the piece's movement
      * @return Collection of valid moves
      */
-    private Collection<ChessMove> getMovesByDirections(ChessBoard board, ChessPosition origin, HashSet<MovementLine.Direction> directions, int range) {
+    private Collection<ChessMove> getMovesByDirections(ChessBoard board, ChessPosition myPosition, HashSet<Direction> directions, int range) {
         Collection<ChessMove> validMoves = new HashSet<>();
         HashSet<MovementLine> movementLines = new HashSet<>();
         HashSet<ChessPosition> validDestinations = new HashSet<>();
 
         if (type != PieceType.PAWN) {
             // Generates movement lines based on directions available to the piece
-            for (MovementLine.Direction direction : directions) {
-                movementLines.add(new MovementLine(origin, direction, range));
+            for (Direction direction : directions) {
+                movementLines.add(new MovementLine(myPosition, direction, range));
             }
 
             // Filters blocked locations along each line and compiles all valid destinations
@@ -164,20 +167,20 @@ public class ChessPiece {
 
             // Creates moves based on the valid destinations
             for (ChessPosition destination : validDestinations) {
-                validMoves.add(new ChessMove(origin, destination, null));
+                validMoves.add(new ChessMove(myPosition, destination, null));
             }
         }
 
         // Pawn capturing and promotion rules are unique and must be handled differently
         else {
             // Generates movement lines based on directions available to the piece
-            for (MovementLine.Direction direction : directions) {
+            for (Direction direction : directions) {
                 // Pawns may only attack along diagonals
-                if (direction != MovementLine.Direction.UP && direction != MovementLine.Direction.DOWN) {
-                    movementLines.add(new MovementLine(origin, direction, range));
+                if (direction != Direction.UP && direction != Direction.DOWN) {
+                    movementLines.add(new MovementLine(myPosition, direction, range));
                 }
                 else {
-                    movementLines.add(new MovementLine(origin, direction, range, true));
+                    movementLines.add(new MovementLine(myPosition, direction, range, true));
                 }
             }
 
@@ -190,13 +193,13 @@ public class ChessPiece {
             for (ChessPosition destination : validDestinations) {
                 // If a pawn reaches the back rank, it must be promoted
                 if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
-                    validMoves.add(new ChessMove(origin, destination, null));
+                    validMoves.add(new ChessMove(myPosition, destination, null));
                 }
                 else {
-                    validMoves.add(new ChessMove(origin, destination, PieceType.QUEEN));
-                    validMoves.add(new ChessMove(origin, destination, PieceType.BISHOP));
-                    validMoves.add(new ChessMove(origin, destination, PieceType.KNIGHT));
-                    validMoves.add(new ChessMove(origin, destination, PieceType.ROOK));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
                 }
             }
         }
@@ -209,31 +212,31 @@ public class ChessPiece {
      * @param directions Set to which the movement directions will be added
      * @param moveType The type of movement options to add
      */
-    private void addDirectionsByType(HashSet<MovementLine.Direction> directions, MovementLine.MoveType moveType) {
+    private void addDirectionsByType(HashSet<Direction> directions, MoveType moveType) {
         switch (moveType) {
             case ORTHOGONAL:
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
+                directions.add(Direction.UP);
+                directions.add(Direction.DOWN);
+                directions.add(Direction.LEFT);
+                directions.add(Direction.RIGHT);
                 break;
 
             case DIAGONAL:
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
+                directions.add(Direction.NE);
+                directions.add(Direction.NW);
+                directions.add(Direction.SE);
+                directions.add(Direction.SW);
                 break;
 
             case KNIGHT:
-                directions.add(MovementLine.Direction.M1_KNIGHT);
-                directions.add(MovementLine.Direction.M2_KNIGHT);
-                directions.add(MovementLine.Direction.M3_KNIGHT);
-                directions.add(MovementLine.Direction.M4_KNIGHT);
-                directions.add(MovementLine.Direction.M5_KNIGHT);
-                directions.add(MovementLine.Direction.M6_KNIGHT);
-                directions.add(MovementLine.Direction.M7_KNIGHT);
-                directions.add(MovementLine.Direction.M8_KNIGHT);
+                directions.add(Direction.M1_KNIGHT);
+                directions.add(Direction.M2_KNIGHT);
+                directions.add(Direction.M3_KNIGHT);
+                directions.add(Direction.M4_KNIGHT);
+                directions.add(Direction.M5_KNIGHT);
+                directions.add(Direction.M6_KNIGHT);
+                directions.add(Direction.M7_KNIGHT);
+                directions.add(Direction.M8_KNIGHT);
                 break;
         }
     }
