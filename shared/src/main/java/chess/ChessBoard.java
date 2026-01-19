@@ -32,6 +32,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
+        if (outOfBounds(position)) return null;
         return squares[position.getColumn() - 1][position.getRow() - 1];
     }
 
@@ -100,8 +101,17 @@ public class ChessBoard {
         return startPositions;
     }
 
-    private int rowFlippedByColor(int row, ChessGame.TeamColor pieceColor) {
+    public int rowFlippedByColor(int row, ChessGame.TeamColor pieceColor) {
         if (pieceColor == ChessGame.TeamColor.WHITE) return row;
         else return 9 - row;
+    }
+
+    public boolean outOfBounds(ChessPosition position) {
+        if (position.getRow() < 1) return true;
+        if (position.getRow() > 8) return true;
+        if (position.getColumn() < 1) return true;
+        if (position.getColumn() > 8) return true;
+
+        return false;
     }
 }
