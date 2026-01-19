@@ -60,6 +60,58 @@ public class ChessPiece {
         int range = 0;
 
         switch (type) {
+            case KING:
+                range = 1;
+                directions.add(MovementLine.Direction.UP);
+                directions.add(MovementLine.Direction.DOWN);
+                directions.add(MovementLine.Direction.LEFT);
+                directions.add(MovementLine.Direction.RIGHT);
+                directions.add(MovementLine.Direction.NE);
+                directions.add(MovementLine.Direction.NW);
+                directions.add(MovementLine.Direction.SE);
+                directions.add(MovementLine.Direction.SW);
+                break;
+
+            case QUEEN:
+                range = 7;
+                directions.add(MovementLine.Direction.UP);
+                directions.add(MovementLine.Direction.DOWN);
+                directions.add(MovementLine.Direction.LEFT);
+                directions.add(MovementLine.Direction.RIGHT);
+                directions.add(MovementLine.Direction.NE);
+                directions.add(MovementLine.Direction.NW);
+                directions.add(MovementLine.Direction.SE);
+                directions.add(MovementLine.Direction.SW);
+                break;
+
+            case BISHOP:
+                range = 7;
+                directions.add(MovementLine.Direction.NE);
+                directions.add(MovementLine.Direction.NW);
+                directions.add(MovementLine.Direction.SE);
+                directions.add(MovementLine.Direction.SW);
+                break;
+
+            case KNIGHT:
+                range = 1;
+                directions.add(MovementLine.Direction.M1_KNIGHT);
+                directions.add(MovementLine.Direction.M2_KNIGHT);
+                directions.add(MovementLine.Direction.M3_KNIGHT);
+                directions.add(MovementLine.Direction.M4_KNIGHT);
+                directions.add(MovementLine.Direction.M5_KNIGHT);
+                directions.add(MovementLine.Direction.M6_KNIGHT);
+                directions.add(MovementLine.Direction.M7_KNIGHT);
+                directions.add(MovementLine.Direction.M8_KNIGHT);
+                break;
+
+            case ROOK:
+                range = 7;
+                directions.add(MovementLine.Direction.UP);
+                directions.add(MovementLine.Direction.DOWN);
+                directions.add(MovementLine.Direction.LEFT);
+                directions.add(MovementLine.Direction.RIGHT);
+                break;
+
             case PAWN:
                 if (myPosition.getRow() == board.rowFlippedByColor(2, pieceColor)) {
                     range = 2;
@@ -92,58 +144,6 @@ public class ChessPiece {
                 }
                 break;
 
-            case ROOK:
-                range = 7;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
-                break;
-
-            case KNIGHT:
-                range = 1;
-                directions.add(MovementLine.Direction.M1_KNIGHT);
-                directions.add(MovementLine.Direction.M2_KNIGHT);
-                directions.add(MovementLine.Direction.M3_KNIGHT);
-                directions.add(MovementLine.Direction.M4_KNIGHT);
-                directions.add(MovementLine.Direction.M5_KNIGHT);
-                directions.add(MovementLine.Direction.M6_KNIGHT);
-                directions.add(MovementLine.Direction.M7_KNIGHT);
-                directions.add(MovementLine.Direction.M8_KNIGHT);
-                break;
-
-            case BISHOP:
-                range = 7;
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
-                break;
-
-            case QUEEN:
-                range = 7;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
-                break;
-
-            case KING:
-                range = 1;
-                directions.add(MovementLine.Direction.UP);
-                directions.add(MovementLine.Direction.DOWN);
-                directions.add(MovementLine.Direction.LEFT);
-                directions.add(MovementLine.Direction.RIGHT);
-                directions.add(MovementLine.Direction.NE);
-                directions.add(MovementLine.Direction.NW);
-                directions.add(MovementLine.Direction.SE);
-                directions.add(MovementLine.Direction.SW);
-                break;
-
             default:
         }
 
@@ -158,6 +158,19 @@ public class ChessPiece {
         if (type != PieceType.PAWN) {
             for (ChessPosition destination : validDestinations) {
                 validMoves.add(new ChessMove(myPosition, destination, null));
+            }
+        }
+        else {
+            for (ChessPosition destination : validDestinations) {
+                if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
+                    validMoves.add(new ChessMove(myPosition, destination, null));
+                }
+                else {
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
+                }
             }
         }
 
