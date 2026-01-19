@@ -1,28 +1,44 @@
 package chess;
 
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.ArrayList;
 
 public class MovementLine {
 
-    List<ChessPosition> positionSequence = new ArrayList<ChessPosition>();
+    ArrayList<ChessPosition> positionSequence = new ArrayList<>();
 
     public MovementLine(ChessPosition origin, Direction direction, int range){
+        int[] unitVector;
+        switch (direction) {
+            case UP ->          unitVector = new int[]{ 1,  0};
+            case DOWN ->        unitVector = new int[]{-1,  0};
+            case LEFT ->        unitVector = new int[]{ 0, -1};
+            case RIGHT ->       unitVector = new int[]{ 0,  1};
+            case NE ->          unitVector = new int[]{ 1,  1};
+            case NW ->          unitVector = new int[]{ 1, -1};
+            case SE ->          unitVector = new int[]{-1,  1};
+            case SW ->          unitVector = new int[]{-1, -1};
+            case M1_KNIGHT ->   unitVector = new int[]{ 1,  2};
+            case M2_KNIGHT ->   unitVector = new int[]{ 2,  1};
+            case M3_KNIGHT ->   unitVector = new int[]{ 2, -1};
+            case M4_KNIGHT ->   unitVector = new int[]{ 1, -2};
+            case M5_KNIGHT ->   unitVector = new int[]{-1, -2};
+            case M6_KNIGHT ->   unitVector = new int[]{-2, -1};
+            case M7_KNIGHT ->   unitVector = new int[]{-2,  1};
+            case M8_KNIGHT ->   unitVector = new int[]{-1,  2};
+            default ->          unitVector = new int[]{ 0,  0};
+        }
 
-    }
-    
-    public void addPosition(ChessPosition position) {
-        positionSequence.add(position);
-    }
-
-    public ChessPosition get(int index) {
-        return positionSequence.get(index);
+        int[] location = new int[]{ origin.getRow(), origin.getColumn() };
+        for (int i = 0; i < range; i++) {
+            location[0] += unitVector[0];
+            location[1] += unitVector[1];
+            positionSequence.add(new ChessPosition(location[0], location[1]));
+        }
     }
 
-    public Collection<ChessPosition> filterBlockedDestinations(ChessBoard board, ChessGame.TeamColor pieceColor) {
-        Collection<ChessPosition> filteredDestinations = new HashSet<ChessPosition>();
+    public HashSet<ChessPosition> filterBlockedDestinations(ChessBoard board, ChessGame.TeamColor pieceColor) {
+        HashSet<ChessPosition> filteredDestinations = new HashSet<>();
         boolean blocked = false;
         for (ChessPosition destination : positionSequence) {
             if (blocked || board.outOfBounds(destination)) break;

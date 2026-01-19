@@ -43,24 +43,24 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        resetBoard(ChessGame.TeamColor.WHITE);
-        resetBoard(ChessGame.TeamColor.BLACK);
+        resetTeam(ChessGame.TeamColor.WHITE);
+        resetTeam(ChessGame.TeamColor.BLACK);
         for (int row = 3; row <= 6; row++) {
             for (int col = 1; row <= 8; row++)
                 squares[row - 1][col - 1] = null;
         }
     }
 
-    private void resetBoard(ChessGame.TeamColor pieceColor) {
-        resetBoard(pieceColor, ChessPiece.PieceType.KING);
-        resetBoard(pieceColor, ChessPiece.PieceType.QUEEN);
-        resetBoard(pieceColor, ChessPiece.PieceType.BISHOP);
-        resetBoard(pieceColor, ChessPiece.PieceType.KNIGHT);
-        resetBoard(pieceColor, ChessPiece.PieceType.ROOK);
-        resetBoard(pieceColor, ChessPiece.PieceType.PAWN);
+    private void resetTeam(ChessGame.TeamColor pieceColor) {
+        resetPiece(pieceColor, ChessPiece.PieceType.KING);
+        resetPiece(pieceColor, ChessPiece.PieceType.QUEEN);
+        resetPiece(pieceColor, ChessPiece.PieceType.BISHOP);
+        resetPiece(pieceColor, ChessPiece.PieceType.KNIGHT);
+        resetPiece(pieceColor, ChessPiece.PieceType.ROOK);
+        resetPiece(pieceColor, ChessPiece.PieceType.PAWN);
     }
 
-    private void resetBoard(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    private void resetPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         for (ChessPosition startPosition : getStartPositions(pieceColor, type)) {
             addPiece(startPosition, new ChessPiece(pieceColor, type));
         }

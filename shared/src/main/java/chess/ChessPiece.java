@@ -53,10 +53,10 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> validMoves = new HashSet<ChessMove>();
-        HashSet<MovementLine.Direction> directions = new HashSet<MovementLine.Direction>();
-        HashSet<MovementLine> movementLines = new HashSet<MovementLine>();
-        HashSet<ChessPosition> validDestinations = new HashSet<ChessPosition>();
+        Collection<ChessMove> validMoves = new HashSet<>();
+        HashSet<MovementLine.Direction> directions = new HashSet<>();
+        HashSet<MovementLine> movementLines = new HashSet<>();
+        HashSet<ChessPosition> validDestinations = new HashSet<>();
         int range = 0;
 
         switch (type) {
