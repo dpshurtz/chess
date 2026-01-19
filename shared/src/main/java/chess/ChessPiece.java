@@ -62,6 +62,7 @@ public class ChessPiece {
 
         switch (type) {
             case KING:
+                // The king moves one square in any of the 8 standard directions
                 range = 1;
                 directions.add(MovementLine.Direction.UP);
                 directions.add(MovementLine.Direction.DOWN);
@@ -74,6 +75,7 @@ public class ChessPiece {
                 break;
 
             case QUEEN:
+                // The queen moves up to 7 squares in any of the 8 standard directions
                 range = 7;
                 directions.add(MovementLine.Direction.UP);
                 directions.add(MovementLine.Direction.DOWN);
@@ -86,6 +88,7 @@ public class ChessPiece {
                 break;
 
             case BISHOP:
+                // The bishop moves up to 7 squares along any diagonal
                 range = 7;
                 directions.add(MovementLine.Direction.NE);
                 directions.add(MovementLine.Direction.NW);
@@ -94,6 +97,7 @@ public class ChessPiece {
                 break;
 
             case KNIGHT:
+                // The knight moves a single time in any of its 8 unique L-shaped directions
                 range = 1;
                 directions.add(MovementLine.Direction.M1_KNIGHT);
                 directions.add(MovementLine.Direction.M2_KNIGHT);
@@ -106,6 +110,7 @@ public class ChessPiece {
                 break;
 
             case ROOK:
+                // The rook moves up to 7 squares vertically or horizontally
                 range = 7;
                 directions.add(MovementLine.Direction.UP);
                 directions.add(MovementLine.Direction.DOWN);
@@ -114,6 +119,8 @@ public class ChessPiece {
                 break;
 
             case PAWN:
+                // If the pawn is on its starting square, it may move 2 squares
+                // Otherwise, it may move only one square
                 if (myPosition.getRow() == board.rowFlippedByColor(2, pieceColor)) {
                     range = 2;
                 }
@@ -121,8 +128,11 @@ public class ChessPiece {
 
                 ChessPiece leftAttack, rightAttack;
 
+                // If the pawn is white, movement must increase the row number
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
                     directions.add(MovementLine.Direction.UP);
+
+                    // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
@@ -132,8 +142,11 @@ public class ChessPiece {
                         directions.add(MovementLine.Direction.NE);
                     }
                 }
+                // If the pawn is black, movement must decrease the row number
                 else {
                     directions.add(MovementLine.Direction.DOWN);
+
+                    // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
@@ -147,21 +160,27 @@ public class ChessPiece {
         }
 
         if (type != PieceType.PAWN) {
+            // Generates movement lines based on directions available to the piece
             for (MovementLine.Direction direction : directions) {
                 movementLines.add(new MovementLine(myPosition, direction, range));
             }
 
+            // Filters blocked locations along each line and compiles all valid destinations
             for (MovementLine movementLine : movementLines) {
                 validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
             }
 
+            // Creates moves based on the valid destinations
             for (ChessPosition destination : validDestinations) {
                 validMoves.add(new ChessMove(myPosition, destination, null));
             }
         }
 
+        // Pawn capturing and promotion rules are unique and must be handled differently
         else {
+            // Generates movement lines based on directions available to the piece
             for (MovementLine.Direction direction : directions) {
+                // Pawns may only attack along diagonals
                 if (direction != MovementLine.Direction.UP && direction != MovementLine.Direction.DOWN) {
                     movementLines.add(new MovementLine(myPosition, direction, range));
                 }
@@ -170,11 +189,14 @@ public class ChessPiece {
                 }
             }
 
+            // Filters blocked locations along each line and compiles all valid destinations
             for (MovementLine movementLine : movementLines) {
                 validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
             }
 
+            // Creates moves based on the valid destinations
             for (ChessPosition destination : validDestinations) {
+                // If a pawn reaches the back rank, it must be promoted
                 if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
                     validMoves.add(new ChessMove(myPosition, destination, null));
                 }

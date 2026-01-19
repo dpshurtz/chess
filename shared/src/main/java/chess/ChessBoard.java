@@ -50,6 +50,9 @@ public class ChessBoard {
         resetTeam(ChessGame.TeamColor.BLACK);
     }
 
+    /**
+     * Sets one team to the default starting configuration
+     */
     private void resetTeam(ChessGame.TeamColor pieceColor) {
         resetPiece(pieceColor, ChessPiece.PieceType.KING);
         resetPiece(pieceColor, ChessPiece.PieceType.QUEEN);
@@ -59,12 +62,20 @@ public class ChessBoard {
         resetPiece(pieceColor, ChessPiece.PieceType.PAWN);
     }
 
+    /**
+     * Sets a piece type on a team in its default starting positions
+     */
     private void resetPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         for (ChessPosition startPosition : getStartPositions(pieceColor, type)) {
             addPiece(startPosition, new ChessPiece(pieceColor, type));
         }
     }
 
+    /**
+     * Determines what the default starting positions are for a given piece
+     *
+     * @return HashSet of starting positions
+     */
     private HashSet<ChessPosition> getStartPositions(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         HashSet<ChessPosition> startPositions = new HashSet<ChessPosition>();
         switch (type) {
@@ -101,11 +112,22 @@ public class ChessBoard {
         return startPositions;
     }
 
-    public int rowFlippedByColor(int row, ChessGame.TeamColor pieceColor) {
-        if (pieceColor == ChessGame.TeamColor.WHITE) return row;
+    /**
+     * Counts rows from the top of the board if the team is black
+     * If team is white, counts from the bottom
+     *
+     * @param row The row number relative to the given team
+     * @param teamColor Color of the team relative to which the row was given
+     * @return The row number relative to board
+     */
+    public int rowFlippedByColor(int row, ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) return row;
         else return 9 - row;
     }
 
+    /**
+     * @return Boolean indicating whether the given position is out of bounds
+     */
     public boolean outOfBounds(ChessPosition position) {
         if (position.getRow() < 1) return true;
         if (position.getRow() > 8) return true;
