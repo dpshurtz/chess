@@ -146,20 +146,34 @@ public class ChessPiece {
                 break;
         }
 
-        for (MovementLine.Direction direction : directions) {
-            movementLines.add(new MovementLine(myPosition, direction, range));
-        }
-
-        for (MovementLine movementLine : movementLines) {
-            validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
-        }
-
         if (type != PieceType.PAWN) {
+            for (MovementLine.Direction direction : directions) {
+                movementLines.add(new MovementLine(myPosition, direction, range));
+            }
+
+            for (MovementLine movementLine : movementLines) {
+                validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
+            }
+
             for (ChessPosition destination : validDestinations) {
                 validMoves.add(new ChessMove(myPosition, destination, null));
             }
         }
+
         else {
+            for (MovementLine.Direction direction : directions) {
+                if (direction != MovementLine.Direction.UP && direction != MovementLine.Direction.DOWN) {
+                    movementLines.add(new MovementLine(myPosition, direction, range));
+                }
+                else {
+                    movementLines.add(new MovementLine(myPosition, direction, range, true));
+                }
+            }
+
+            for (MovementLine movementLine : movementLines) {
+                validDestinations.addAll(movementLine.filterBlockedDestinations(board, pieceColor));
+            }
+
             for (ChessPosition destination : validDestinations) {
                 if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
                     validMoves.add(new ChessMove(myPosition, destination, null));

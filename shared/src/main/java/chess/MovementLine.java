@@ -6,8 +6,15 @@ import java.util.ArrayList;
 public class MovementLine {
 
     ArrayList<ChessPosition> positionSequence = new ArrayList<>();
+    boolean noAttack = false;
 
-    public MovementLine(ChessPosition origin, Direction direction, int range){
+    public MovementLine(ChessPosition origin, Direction direction, int range) {
+        this(origin, direction, range, false);
+    }
+
+    public MovementLine(ChessPosition origin, Direction direction, int range, boolean noAttack) {
+        this.noAttack = noAttack;
+
         int[] unitVector;
         switch (direction) {
             case UP ->          unitVector = new int[]{ 1,  0};
@@ -51,6 +58,7 @@ public class MovementLine {
                 break;
             }
             else {
+                if (noAttack) break;
                 filteredDestinations.add(destination);
                 blocked = true;
             }
