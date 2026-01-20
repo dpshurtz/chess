@@ -109,7 +109,7 @@ public class ChessPiece {
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
                     directions.add(Direction.UP);
 
-                    // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
+                    // Diagonal movement is valid only if an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
@@ -123,7 +123,7 @@ public class ChessPiece {
                 else {
                     directions.add(Direction.DOWN);
 
-                    // Diagonal movement is valid iff an enemy piece is touching the pawn in that direction
+                    // Diagonal movement is valid only if an enemy piece is touching the pawn in that direction
                     leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1));
                     rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1));
                     if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
