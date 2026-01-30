@@ -57,6 +57,72 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        Collection<ChessMove> validMoves = new HashSet<>();
+        HashSet<ChessPosition> validDestinations = new HashSet<>();
+
+        HashSet<MovementLine> movementLines = getMovementLines(board, myPosition);
+
+        // Filters blocked locations along each line and compiles all valid destinations
+        for (MovementLine movementLine : movementLines) {
+            validDestinations.addAll(movementLine.filterBlockedDestinations());
+        }
+
+        if (type != PieceType.PAWN) {
+            // Creates moves based on the valid destinations
+            for (ChessPosition destination : validDestinations) {
+                validMoves.add(new ChessMove(myPosition, destination, null));
+            }
+        }
+
+        // Pawns may be promoted and must be handled differently
+        else {
+            // Creates moves based on the valid destinations
+            for (ChessPosition destination : validDestinations) {
+                // If a pawn reaches the back rank, it must be promoted
+                if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
+                    validMoves.add(new ChessMove(myPosition, destination, null));
+                }
+                else {
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
+                    validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
+                }
+            }
+        }
+        return validMoves;
+    }
+
+    public HashSet<MovementLine> getMovementLines(ChessBoard board, ChessPosition myPosition) {
+        HashSet<MovementLine> movementLines = new HashSet<>();
+        PieceVectors pieceVectors = getPieceVectors(board, myPosition);
+        HashSet<Direction> directions = pieceVectors.directions();
+        int range = pieceVectors.range();
+
+        if (type != PieceType.PAWN) {
+            // Generates movement lines based on directions available to the piece
+            for (Direction direction : directions) {
+                movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
+            }
+        }
+
+        // Pawn capture rules are unique and must be handled differently
+        else {
+            // Generates movement lines based on directions available to the piece
+            for (Direction direction : directions) {
+                // Pawns may only attack along diagonals
+                if (direction != Direction.UP && direction != Direction.DOWN) {
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
+                } else {
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true));
+                }
+            }
+        }
+
+        return movementLines;
+    }
+
+    public PieceVectors getPieceVectors(ChessBoard board, ChessPosition myPosition) {
         HashSet<Direction> directions = new HashSet<>();
         int range = 0;
 
@@ -136,74 +202,7 @@ public class ChessPiece {
                 break;
         }
 
-        return getMovesByDirections(board, myPosition, directions, range);
-    }
-
-    /**
-     * Calculates all the positions a chess piece can move to
-     * based on the direction and range parameters
-     *
-     * @param board Current state of the board
-     * @param myPosition Piece's current location
-     * @param directions Set of directions that a piece can move
-     * @param range Range of the piece's movement
-     * @return Collection of valid moves
-     */
-    private Collection<ChessMove> getMovesByDirections(ChessBoard board, ChessPosition myPosition, HashSet<Direction> directions, int range) {
-        Collection<ChessMove> validMoves = new HashSet<>();
-        HashSet<MovementLine> movementLines = new HashSet<>();
-        HashSet<ChessPosition> validDestinations = new HashSet<>();
-
-        if (type != PieceType.PAWN) {
-            // Generates movement lines based on directions available to the piece
-            for (Direction direction : directions) {
-                movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
-            }
-
-            // Filters blocked locations along each line and compiles all valid destinations
-            for (MovementLine movementLine : movementLines) {
-                validDestinations.addAll(movementLine.filterBlockedDestinations());
-            }
-
-            // Creates moves based on the valid destinations
-            for (ChessPosition destination : validDestinations) {
-                validMoves.add(new ChessMove(myPosition, destination, null));
-            }
-        }
-
-        // Pawn capturing and promotion rules are unique and must be handled differently
-        else {
-            // Generates movement lines based on directions available to the piece
-            for (Direction direction : directions) {
-                // Pawns may only attack along diagonals
-                if (direction != Direction.UP && direction != Direction.DOWN) {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
-                }
-                else {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true));
-                }
-            }
-
-            // Filters blocked locations along each line and compiles all valid destinations
-            for (MovementLine movementLine : movementLines) {
-                validDestinations.addAll(movementLine.filterBlockedDestinations());
-            }
-
-            // Creates moves based on the valid destinations
-            for (ChessPosition destination : validDestinations) {
-                // If a pawn reaches the back rank, it must be promoted
-                if (destination.getRow() != board.rowFlippedByColor(8, pieceColor)){
-                    validMoves.add(new ChessMove(myPosition, destination, null));
-                }
-                else {
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
-                    validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
-                }
-            }
-        }
-        return validMoves;
+        return new PieceVectors(directions, range);
     }
 
     /**
