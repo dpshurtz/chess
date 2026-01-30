@@ -114,6 +114,22 @@ public class ChessBoard {
         return startPositions;
     }
 
+    public HashSet<MovementLine> getMovementLines() {
+        HashSet<MovementLine> movementLines = new HashSet<>();
+        ChessPiece piece;
+        ChessPosition position;
+
+        for (int i=1; i<=squares.length; i++) {
+            for (int j=1; j<=squares.length; j++) {
+                position = new ChessPosition(i, j);
+                piece = getPiece(position);
+                movementLines.addAll(piece.getMovementLines(this, position));
+            }
+        }
+
+        return movementLines;
+    }
+
     /**
      * Counts rows from the top of the board if the team is black
      * If team is white, counts from the bottom
