@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.ArrayList;
 
@@ -10,19 +11,22 @@ import java.util.ArrayList;
  */
 public class MovementLine {
 
-    private ArrayList<ChessPosition> positionSequence = new ArrayList<>();
+    private final ArrayList<ChessPosition> positionSequence = new ArrayList<>();
     private boolean noAttack = false;
-    private ChessGame.TeamColor team;
+    private final ChessGame.TeamColor team;
+    private final ChessBoard board;
+    private Collection<ChessPosition> filteredPositions;
 
     // Constructor for lines along which an attack may be valid
-    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team) {
-        this(origin, direction, range, team, false);
+    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board) {
+        this(origin, direction, range, team, board, false);
     }
 
     // Constructor that allows the validity of attack along a line to be disabled
-    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, boolean noAttack) {
+    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board, boolean noAttack) {
         this.noAttack = noAttack;
         this.team = team;
+        this.board = board;
 
         // Generates a vector representing a single step for each movement direction
         int[] unitVector;
@@ -54,16 +58,17 @@ public class MovementLine {
             location[1] += unitVector[1];
             positionSequence.add(new ChessPosition(location[0], location[1]));
         }
+
+        setFilter();
     }
 
     /**
      * Filters the line of movement, not including any positions in the sequence that
      * are beyond a blocking piece or the edge of the board
      *
-     * @param board The current configuration of pieces on the board
      * @return HashSet of all locations in the line that are not blocked by another piece or the edge of the board
      */
-    public HashSet<ChessPosition> filterBlockedDestinations(ChessBoard board) {
+    public HashSet<ChessPosition> filterBlockedDestinations() {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
         boolean blocked = false;
 
@@ -93,6 +98,34 @@ public class MovementLine {
             }
         }
         return filteredDestinations;
+    }
+
+    public void setFilter() {
+        filteredPositions = filterBlockedDestinations();
+    }
+
+    public boolean isAttacked(ChessPosition position) {
+        return filteredPositions.contains(position);
+    }
+
+    public boolean isPinned(ChessPosition position) {
+        boolean pastBlockingPiece = false;
+        ChessPiece target;
+
+        for (ChessPosition destination : positionSequence) {
+            if (!pastBlockingPiece) {
+                if (destination == position) {
+                    pastBlockingPiece = true;
+                }
+                continue;
+            }
+
+            target = board.getPiece(destination);
+            if (target != null) {
+                return (target.getPieceType() == ChessPiece.PieceType.KING && target.getTeamColor() != team);
+            }
+        }
+        return false;
     }
 
     /**

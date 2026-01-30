@@ -157,12 +157,12 @@ public class ChessPiece {
         if (type != PieceType.PAWN) {
             // Generates movement lines based on directions available to the piece
             for (Direction direction : directions) {
-                movementLines.add(new MovementLine(myPosition, direction, range, pieceColor));
+                movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
             }
 
             // Filters blocked locations along each line and compiles all valid destinations
             for (MovementLine movementLine : movementLines) {
-                validDestinations.addAll(movementLine.filterBlockedDestinations(board));
+                validDestinations.addAll(movementLine.filterBlockedDestinations());
             }
 
             // Creates moves based on the valid destinations
@@ -177,16 +177,16 @@ public class ChessPiece {
             for (Direction direction : directions) {
                 // Pawns may only attack along diagonals
                 if (direction != Direction.UP && direction != Direction.DOWN) {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor));
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
                 }
                 else {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, true));
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true));
                 }
             }
 
             // Filters blocked locations along each line and compiles all valid destinations
             for (MovementLine movementLine : movementLines) {
-                validDestinations.addAll(movementLine.filterBlockedDestinations(board));
+                validDestinations.addAll(movementLine.filterBlockedDestinations());
             }
 
             // Creates moves based on the valid destinations
