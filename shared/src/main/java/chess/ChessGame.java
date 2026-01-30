@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -11,6 +13,9 @@ import java.util.Collection;
 public class ChessGame {
 
     private TeamColor teamTurn = TeamColor.WHITE;
+    private Collection<MovementLine> movementLines = new HashSet<>();
+    private HashMap<ChessPosition, Collection<MovementLine>> underAttackWhite = new HashMap<>();
+    private HashMap<ChessPosition, Collection<MovementLine>> underAttackBlack = new HashMap<>();
 
     public ChessGame() {
 

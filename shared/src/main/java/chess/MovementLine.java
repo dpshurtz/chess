@@ -10,17 +10,19 @@ import java.util.ArrayList;
  */
 public class MovementLine {
 
-    ArrayList<ChessPosition> positionSequence = new ArrayList<>();
-    boolean noAttack = false;
+    private ArrayList<ChessPosition> positionSequence = new ArrayList<>();
+    private boolean noAttack = false;
+    private ChessGame.TeamColor team;
 
     // Constructor for lines along which an attack may be valid
-    public MovementLine(ChessPosition origin, Direction direction, int range) {
-        this(origin, direction, range, false);
+    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team) {
+        this(origin, direction, range, team, false);
     }
 
     // Constructor that allows the validity of attack along a line to be disabled
-    public MovementLine(ChessPosition origin, Direction direction, int range, boolean noAttack) {
+    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, boolean noAttack) {
         this.noAttack = noAttack;
+        this.team = team;
 
         // Generates a vector representing a single step for each movement direction
         int[] unitVector;
@@ -59,10 +61,9 @@ public class MovementLine {
      * are beyond a blocking piece or the edge of the board
      *
      * @param board The current configuration of pieces on the board
-     * @param pieceColor Color of the piece attempting to move
      * @return HashSet of all locations in the line that are not blocked by another piece or the edge of the board
      */
-    public HashSet<ChessPosition> filterBlockedDestinations(ChessBoard board, ChessGame.TeamColor pieceColor) {
+    public HashSet<ChessPosition> filterBlockedDestinations(ChessBoard board) {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
         boolean blocked = false;
 
@@ -77,7 +78,7 @@ public class MovementLine {
                 // The target square is empty, so movement is unhindered
                 filteredDestinations.add(destination);
             }
-            else if (targetPiece.getTeamColor() == pieceColor) {
+            else if (targetPiece.getTeamColor() == team) {
                 // The target square contains a friendly piece, so further movement is impossible
                 break;
             }
