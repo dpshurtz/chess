@@ -62,6 +62,18 @@ public class MovementLine {
         setFilter();
     }
 
+    public ChessGame.TeamColor getTeam() {
+        return team;
+    }
+
+    public Collection<ChessPosition> getFilteredPositions() {
+        return filteredPositions;
+    }
+
+    public ArrayList<ChessPosition> getPositionSequence() {
+        return positionSequence;
+    }
+
     /**
      * Filters the line of movement, not including any positions in the sequence that
      * are beyond a blocking piece or the edge of the board

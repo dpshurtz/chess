@@ -12,10 +12,15 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    ChessPiece[][] squares = new ChessPiece[8][8];
+    private ChessPiece[][] squares = new ChessPiece[8][8];
+    private final HashSet<ChessPosition> positions = new HashSet<>();
 
     public ChessBoard() {
-        
+        for (int i=1; i<=squares.length; i++) {
+            for (int j=1; j<=squares.length; j++) {
+                positions.add(new ChessPosition(i, j));
+            }
+        }
     }
 
     /**
@@ -117,17 +122,19 @@ public class ChessBoard {
     public HashSet<MovementLine> getMovementLines() {
         HashSet<MovementLine> movementLines = new HashSet<>();
         ChessPiece piece;
-        ChessPosition position;
 
-        for (int i=1; i<=squares.length; i++) {
-            for (int j=1; j<=squares.length; j++) {
-                position = new ChessPosition(i, j);
-                piece = getPiece(position);
+        for (ChessPosition position : positions){
+            piece = getPiece(position);
+            if (piece != null) {
                 movementLines.addAll(piece.getMovementLines(this, position));
             }
         }
 
         return movementLines;
+    }
+
+    public HashSet<ChessPosition> getPositions() {
+        return positions;
     }
 
     /**

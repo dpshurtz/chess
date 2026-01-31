@@ -3,6 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -12,13 +13,16 @@ import java.util.HashMap;
  */
 public class ChessGame {
 
+    private ChessBoard board = new ChessBoard();
     private TeamColor teamTurn = TeamColor.WHITE;
     private Collection<MovementLine> movementLines = new HashSet<>();
-    private HashMap<ChessPosition, Collection<MovementLine>> underAttackWhite = new HashMap<>();
-    private HashMap<ChessPosition, Collection<MovementLine>> underAttackBlack = new HashMap<>();
+    private HashMap<ChessPosition, Collection<MovementLine>> underAttackByWhite = new HashMap<>();
+    private HashMap<ChessPosition, Collection<MovementLine>> underAttackByBlack = new HashMap<>();
 
     public ChessGame() {
-
+        board.resetBoard();
+        movementLines = board.getMovementLines();
+        resetAllAttacks();
     }
 
     /**
@@ -53,7 +57,28 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        TeamColor team = piece.getTeamColor();
+
+        if (piece == null || teamTurn != team) {
+            return null;
+        }
+
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            return piece.pieceMoves(board, startPosition).stream()
+                    .filter(move -> isSafe(move.getEndPosition(), team))
+                    .collect(Collectors.toSet());
+        }
+
+        else {
+            Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+            for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(startPosition)) {
+                if (movementLine.isPinned(startPosition)) {
+                    moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
+                }
+            }
+            return moves;
+        }
     }
 
     /**
@@ -103,7 +128,9 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
+        movementLines = board.getMovementLines();
+        resetAllAttacks();
     }
 
     /**
@@ -112,6 +139,50 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
+    }
+
+    private void resetAllAttacks() {
+        for (ChessPosition position : board.getPositions()) {
+            underAttackByWhite.put(position, new HashSet<>());
+            underAttackByBlack.put(position, new HashSet<>());
+        }
+
+        for (MovementLine movementLine : movementLines) {
+            movementLine.setFilter();
+
+            if (movementLine.getTeam() == TeamColor.WHITE) {
+                for (ChessPosition position : movementLine.getFilteredPositions()) {
+                    underAttackByWhite.get(position).add(movementLine);
+                }
+            }
+            else {
+                for (ChessPosition position : movementLine.getFilteredPositions()) {
+                    underAttackByBlack.get(position).add(movementLine);
+                }
+            }
+        }
+    }
+
+    private boolean isSafe(ChessPosition position, TeamColor myTeam) {
+        return underAttackByTeam(enemyTeam(myTeam)).get(position).isEmpty();
+    }
+
+    private HashMap<ChessPosition, Collection<MovementLine>> underAttackByTeam(TeamColor team) {
+        if (team == TeamColor.WHITE) {
+            return underAttackByWhite;
+        }
+        else {
+            return underAttackByBlack;
+        }
+    }
+
+    private TeamColor enemyTeam(TeamColor team) {
+        if (team == TeamColor.WHITE) {
+            return TeamColor.BLACK;
+        }
+        else {
+            return TeamColor.WHITE;
+        }
     }
 }
