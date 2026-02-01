@@ -86,76 +86,22 @@ public class ChessGame {
 
         board.makeMove(move);
 
-        ChessPosition origin = move.getStartPosition();
-        ChessPosition destination = move.getEndPosition();
-        Collection<MovementLine> oldMovementLines;
+        movementLinesByOrigin.get(move.getStartPosition()).clear();
+        movementLinesByOrigin.put(move.getEndPosition(),
+                piece.getMovementLines(board, move.getEndPosition()));
 
-        // piece's lines updates
-        // old lines from origin
-        for (MovementLine movementLine : movementLinesByOrigin.get(origin)) {
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByTeam(teamTurn).get(position).remove(movementLine);
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (teamTurn == TeamColor.WHITE) {
+                kingPosWhite = move.getEndPosition();
             }
-        }
-        movementLinesByOrigin.get(origin).clear();
-        // old lines from destination
-        for (MovementLine movementLine : movementLinesByOrigin.get(destination)) {
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByTeam(enemyTeam(teamTurn)).get(position).remove(movementLine);
-            }
-        }
-        movementLinesByOrigin.put(destination, piece.getMovementLines(board, destination));
-        // New lines from destination
-        for (MovementLine movementLine : movementLinesByOrigin.get(destination)) {
-            movementLine.findAttackedPositions();
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByTeam(teamTurn).get(position).add(movementLine);
+            else {
+                kingPosBlack = move.getEndPosition();
             }
         }
 
-        // destination updates
-        // White lines passing through destination
-        oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.WHITE).get(destination));
-        for (MovementLine movementLine : oldMovementLines) {
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByWhite.get(position).remove(movementLine);
-            }
-            movementLine.findAttackedPositions();
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByWhite.get(position).add(movementLine);
-            }
-        }
-        // Black lines passing through destination
-        oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.BLACK).get(destination));
-        for (MovementLine movementLine : oldMovementLines) {
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByBlack.get(position).remove(movementLine);
-            }
-            movementLine.findAttackedPositions();
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByBlack.get(position).add(movementLine);
-            }
-        }
-
-        // origin updates
-        // White lines passing through origin
-        oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.WHITE).get(origin));
-        for (MovementLine movementLine : oldMovementLines) {
-            movementLine.findAttackedPositions();
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByWhite.get(position).add(movementLine);
-            }
-        }
-        // Black lines passing through origin
-        oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.BLACK).get(origin));
-        for (MovementLine movementLine : oldMovementLines) {
-            movementLine.findAttackedPositions();
-            for (ChessPosition position : movementLine.getAttackedPositions()) {
-                underAttackByBlack.get(position).add(movementLine);
-            }
-        }
-
+        resetAllAttacks();
         findAllValidMoves();
+
         teamTurn = enemyTeam(teamTurn);
     }
 
@@ -176,7 +122,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return (isInCheck(teamColor) && !hasValidMoves(teamColor));
+        return (isInCheck(teamColor) && hasNoValidMoves(teamColor));
     }
 
     /**
@@ -187,7 +133,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return (!isInCheck(teamColor) && !hasValidMoves(teamColor));
+        return (!isInCheck(teamColor) && hasNoValidMoves(teamColor));
     }
 
     /**
@@ -282,15 +228,15 @@ public class ChessGame {
         }
     }
 
-    private boolean hasValidMoves(TeamColor team) {
+    private boolean hasNoValidMoves(TeamColor team) {
         ChessPiece piece;
         for (ChessPosition position : validMovesFrom.keySet()) {
             piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() == team && !validMovesFrom.get(position).isEmpty()) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void findAllValidMoves() {
