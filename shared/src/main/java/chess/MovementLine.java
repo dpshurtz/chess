@@ -126,7 +126,6 @@ public class MovementLine {
         ChessPiece target;
 
         for (ChessPosition destination : positionSequence) {
-            System.out.println(destination);
             if (!pastBlockingPiece) {
                 if (destination.equals(position)) {
                     pastBlockingPiece = true;

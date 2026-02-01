@@ -18,11 +18,14 @@ public class ChessGame {
     private Collection<MovementLine> movementLines = new HashSet<>();
     private HashMap<ChessPosition, Collection<MovementLine>> underAttackByWhite = new HashMap<>();
     private HashMap<ChessPosition, Collection<MovementLine>> underAttackByBlack = new HashMap<>();
+    private ChessPosition kingPosWhite;
+    private ChessPosition kingPosBlack;
 
     public ChessGame() {
         board.resetBoard();
         movementLines = board.getMovementLines();
         resetAllAttacks();
+        setKingPositions();
     }
 
     /**
@@ -72,11 +75,17 @@ public class ChessGame {
 
         else {
             Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
-            System.out.println("Point 0");
+            if (isInCheck(team)) {
+                for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(kingPos(team))) {
+                    moves.removeIf(move ->
+                            !movementLine.getFilteredPositions().contains(move.getEndPosition()) &&
+                            !movementLine.getPositionSequence().getFirst().equals(move.getEndPosition())
+                    );
+                }
+            }
+
             for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(startPosition)) {
-                System.out.println("Point 1");
                 if (movementLine.isPinned(startPosition)) {
-                    System.out.println("Point 2");
                     moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
                 }
             }
@@ -101,7 +110,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !isSafe(kingPos(teamColor), teamColor);
     }
 
     /**
@@ -134,6 +143,7 @@ public class ChessGame {
         this.board = board;
         movementLines = board.getMovementLines();
         resetAllAttacks();
+        setKingPositions();
     }
 
     /**
@@ -186,6 +196,30 @@ public class ChessGame {
         }
         else {
             return TeamColor.WHITE;
+        }
+    }
+
+    private void setKingPositions() {
+        ChessPiece piece;
+        for (ChessPosition position : board.getPositions()) {
+            piece = board.getPiece(position);
+            if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                if (piece.getTeamColor() == TeamColor.WHITE) {
+                    kingPosWhite = position;
+                }
+                else {
+                    kingPosBlack = position;
+                }
+            }
+        }
+    }
+
+    private ChessPosition kingPos(TeamColor team) {
+        if (team == TeamColor.WHITE) {
+            return kingPosWhite;
+        }
+        else {
+            return kingPosBlack;
         }
     }
 }
