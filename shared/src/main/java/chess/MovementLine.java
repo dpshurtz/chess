@@ -205,4 +205,9 @@ public class MovementLine {
         W_PAWN,
         B_PAWN
     }
+
+    @Override
+    public String toString() {
+        return positionSequence.toString();
+    }
 }

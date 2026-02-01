@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -133,14 +131,17 @@ public class ChessBoard {
         addPiece(move.getStartPosition(), null);
     }
 
-    public HashSet<MovementLine> getMovementLines() {
-        HashSet<MovementLine> movementLines = new HashSet<>();
+    public HashMap<ChessPosition, Collection<MovementLine>> getMovementLines() {
+        HashMap<ChessPosition, Collection<MovementLine>> movementLines = new HashMap<>();
         ChessPiece piece;
 
         for (ChessPosition position : positions){
             piece = getPiece(position);
             if (piece != null) {
-                movementLines.addAll(piece.getMovementLines(this, position));
+                movementLines.put(position, piece.getMovementLines(this, position));
+            }
+            else {
+                movementLines.put(position, new HashSet<>());
             }
         }
 
