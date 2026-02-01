@@ -53,6 +53,7 @@ public class MovementLine {
         // Moves forward a unit in the given direction, repeating based on the range
         // Adds each step to the sequence of positions in the line
         int[] location = new int[]{ origin.getRow(), origin.getColumn() };
+        positionSequence.add(origin);
         for (int i = 0; i < range; i++) {
             location[0] += unitVector[0];
             location[1] += unitVector[1];
@@ -84,7 +85,7 @@ public class MovementLine {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
         boolean blocked = false;
 
-        for (ChessPosition destination : positionSequence) {
+        for (ChessPosition destination : positionSequence.subList(1, positionSequence.size())) {
             // If the line is blocked or out of bounds, do not include the rest of the line
             if (blocked || board.outOfBounds(destination)) {
                 break;
@@ -125,8 +126,9 @@ public class MovementLine {
         ChessPiece target;
 
         for (ChessPosition destination : positionSequence) {
+            System.out.println(destination);
             if (!pastBlockingPiece) {
-                if (destination == position) {
+                if (destination.equals(position)) {
                     pastBlockingPiece = true;
                 }
                 continue;

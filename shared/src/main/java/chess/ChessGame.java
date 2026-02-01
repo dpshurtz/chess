@@ -58,11 +58,11 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
-        TeamColor team = piece.getTeamColor();
-
-        if (piece == null || teamTurn != team) {
+        if (piece == null) {
             return null;
         }
+
+        TeamColor team = piece.getTeamColor();
 
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             return piece.pieceMoves(board, startPosition).stream()
@@ -72,8 +72,11 @@ public class ChessGame {
 
         else {
             Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+            System.out.println("Point 0");
             for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(startPosition)) {
+                System.out.println("Point 1");
                 if (movementLine.isPinned(startPosition)) {
+                    System.out.println("Point 2");
                     moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
                 }
             }
