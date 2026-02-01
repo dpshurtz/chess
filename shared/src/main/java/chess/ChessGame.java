@@ -90,28 +90,23 @@ public class ChessGame {
         ChessPosition destination = move.getEndPosition();
         Collection<MovementLine> oldMovementLines;
 
-        System.out.println("\nTurn");
-
         // piece's lines updates
-        System.out.println("Old lines from origin");
+        // old lines from origin
         for (MovementLine movementLine : movementLinesByOrigin.get(origin)) {
-            System.out.println(movementLine);
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByTeam(teamTurn).get(position).remove(movementLine);
             }
         }
         movementLinesByOrigin.get(origin).clear();
-        System.out.println("Old lines from destination");
+        // old lines from destination
         for (MovementLine movementLine : movementLinesByOrigin.get(destination)) {
-            System.out.println(movementLine);
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByTeam(enemyTeam(teamTurn)).get(position).remove(movementLine);
             }
         }
         movementLinesByOrigin.put(destination, piece.getMovementLines(board, destination));
-        System.out.println("New lines from destination");
+        // New lines from destination
         for (MovementLine movementLine : movementLinesByOrigin.get(destination)) {
-            System.out.println(movementLine);
             movementLine.findAttackedPositions();
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByTeam(teamTurn).get(position).add(movementLine);
@@ -119,10 +114,9 @@ public class ChessGame {
         }
 
         // destination updates
-        System.out.println("White lines passing through destination");
+        // White lines passing through destination
         oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.WHITE).get(destination));
         for (MovementLine movementLine : oldMovementLines) {
-            System.out.println(movementLine);
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByWhite.get(position).remove(movementLine);
             }
@@ -131,10 +125,9 @@ public class ChessGame {
                 underAttackByWhite.get(position).add(movementLine);
             }
         }
-        System.out.println("Black lines passing through destination");
+        // Black lines passing through destination
         oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.BLACK).get(destination));
         for (MovementLine movementLine : oldMovementLines) {
-            System.out.println(movementLine);
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByBlack.get(position).remove(movementLine);
             }
@@ -145,19 +138,17 @@ public class ChessGame {
         }
 
         // origin updates
-        System.out.println("White lines passing through origin");
+        // White lines passing through origin
         oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.WHITE).get(origin));
         for (MovementLine movementLine : oldMovementLines) {
-            System.out.println(movementLine);
             movementLine.findAttackedPositions();
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByWhite.get(position).add(movementLine);
             }
         }
-        System.out.println("Black lines passing through origin");
+        // Black lines passing through origin
         oldMovementLines = new HashSet<>(underAttackByTeam(TeamColor.BLACK).get(origin));
         for (MovementLine movementLine : oldMovementLines) {
-            System.out.println(movementLine);
             movementLine.findAttackedPositions();
             for (ChessPosition position : movementLine.getAttackedPositions()) {
                 underAttackByBlack.get(position).add(movementLine);
