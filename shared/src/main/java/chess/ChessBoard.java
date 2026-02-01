@@ -119,6 +119,20 @@ public class ChessBoard {
         return startPositions;
     }
 
+    public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (outOfBounds(move.getEndPosition()) || outOfBounds(move.getStartPosition())) {
+            throw new InvalidMoveException();
+        }
+
+        ChessPiece newPiece = getPiece(move.getStartPosition());
+        if (move.getPromotionPiece() != null) {
+            newPiece = new ChessPiece(newPiece.getTeamColor(), move.getPromotionPiece());
+        }
+
+        addPiece(move.getEndPosition(), newPiece);
+        addPiece(move.getStartPosition(), null);
+    }
+
     public HashSet<MovementLine> getMovementLines() {
         HashSet<MovementLine> movementLines = new HashSet<>();
         ChessPiece piece;

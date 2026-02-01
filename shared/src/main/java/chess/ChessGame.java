@@ -62,6 +62,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        if (board.getPiece(startPosition) == null) {
+            return null;
+        }
         return validMovesFrom.get(startPosition);
     }
 
@@ -72,7 +75,16 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (piece == null || piece.getTeamColor() != teamTurn) {
+            throw new InvalidMoveException();
+        }
+        if (!validMoves(move.getStartPosition()).contains(move)) {
+            throw new InvalidMoveException();
+        }
+
+        board.makeMove(move);
+        teamTurn = enemyTeam(teamTurn);
     }
 
     /**
@@ -201,10 +213,6 @@ public class ChessGame {
         for (ChessPosition position : validMovesFrom.keySet()) {
             piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() == team && !validMovesFrom.get(position).isEmpty()) {
-                System.out.println("Valid moves found: ");
-                for (ChessMove move : validMovesFrom.get(position)) {
-                    System.out.println(move);
-                }
                 return true;
             }
         }
@@ -233,8 +241,6 @@ public class ChessGame {
 
         else {
             Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
-            System.out.println("Original moves");
-            System.out.println(moves);
 
             if (isInCheck(team)) {
                 for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(kingPos(team))) {
@@ -251,8 +257,6 @@ public class ChessGame {
                 }
             }
 
-            System.out.println("Filtered moves");
-            System.out.println(moves);
             return moves;
         }
     }
