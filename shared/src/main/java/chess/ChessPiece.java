@@ -112,9 +112,10 @@ public class ChessPiece {
             for (Direction direction : directions) {
                 // Pawns may only attack along diagonals
                 if (direction != Direction.UP && direction != Direction.DOWN) {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board));
-                } else {
-                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true));
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true, false));
+                }
+                else {
+                    movementLines.add(new MovementLine(myPosition, direction, range, pieceColor, board, true, true));
                 }
             }
         }
@@ -169,35 +170,11 @@ public class ChessPiece {
                     range = 1;
                 }
 
-                ChessPiece leftAttack, rightAttack;
-
-                // If the pawn is white, movement must increase the row number
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
-                    directions.add(Direction.UP);
-
-                    // Diagonal movement is valid only if an enemy piece is touching the pawn in that direction
-                    leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1));
-                    rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1));
-                    if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
-                        directions.add(Direction.NW);
-                    }
-                    if (rightAttack != null && rightAttack.getTeamColor() != pieceColor) {
-                        directions.add(Direction.NE);
-                    }
+                    addDirectionsByType(directions, MoveType.W_PAWN);
                 }
-                // If the pawn is black, movement must decrease the row number
                 else {
-                    directions.add(Direction.DOWN);
-
-                    // Diagonal movement is valid only if an enemy piece is touching the pawn in that direction
-                    leftAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1));
-                    rightAttack = board.getPiece(new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1));
-                    if (leftAttack != null && leftAttack.getTeamColor() != pieceColor) {
-                        directions.add(Direction.SW);
-                    }
-                    if (rightAttack != null && rightAttack.getTeamColor() != pieceColor) {
-                        directions.add(Direction.SE);
-                    }
+                    addDirectionsByType(directions, MoveType.B_PAWN);
                 }
                 break;
         }
@@ -236,6 +213,18 @@ public class ChessPiece {
                 directions.add(Direction.M6_KNIGHT);
                 directions.add(Direction.M7_KNIGHT);
                 directions.add(Direction.M8_KNIGHT);
+                break;
+
+            case W_PAWN:
+                directions.add(Direction.UP);
+                directions.add(Direction.NE);
+                directions.add(Direction.NW);
+                break;
+
+            case B_PAWN:
+                directions.add(Direction.DOWN);
+                directions.add(Direction.SE);
+                directions.add(Direction.SW);
                 break;
         }
     }

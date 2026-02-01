@@ -20,12 +20,14 @@ public class ChessGame {
     private HashMap<ChessPosition, Collection<MovementLine>> underAttackByBlack = new HashMap<>();
     private ChessPosition kingPosWhite;
     private ChessPosition kingPosBlack;
+    private HashMap<ChessPosition, Collection<ChessMove>> validMovesFrom = new HashMap<>();
 
     public ChessGame() {
         board.resetBoard();
         movementLines = board.getMovementLines();
         resetAllAttacks();
         setKingPositions();
+        findAllValidMoves();
     }
 
     /**
@@ -60,37 +62,7 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null) {
-            return null;
-        }
-
-        TeamColor team = piece.getTeamColor();
-
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-            return piece.pieceMoves(board, startPosition).stream()
-                    .filter(move -> isSafe(move.getEndPosition(), team))
-                    .collect(Collectors.toSet());
-        }
-
-        else {
-            Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
-            if (isInCheck(team)) {
-                for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(kingPos(team))) {
-                    moves.removeIf(move ->
-                            !movementLine.getFilteredPositions().contains(move.getEndPosition()) &&
-                            !movementLine.getPositionSequence().getFirst().equals(move.getEndPosition())
-                    );
-                }
-            }
-
-            for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(startPosition)) {
-                if (movementLine.isPinned(startPosition)) {
-                    moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
-                }
-            }
-            return moves;
-        }
+        return validMovesFrom.get(startPosition);
     }
 
     /**
@@ -120,7 +92,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return (isInCheck(teamColor) && !hasValidMoves(teamColor));
     }
 
     /**
@@ -131,7 +103,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return (!isInCheck(teamColor) && !hasValidMoves(teamColor));
     }
 
     /**
@@ -144,6 +116,7 @@ public class ChessGame {
         movementLines = board.getMovementLines();
         resetAllAttacks();
         setKingPositions();
+        findAllValidMoves();
     }
 
     /**
@@ -162,15 +135,15 @@ public class ChessGame {
         }
 
         for (MovementLine movementLine : movementLines) {
-            movementLine.setFilter();
+            movementLine.findAttackedPositions();
 
             if (movementLine.getTeam() == TeamColor.WHITE) {
-                for (ChessPosition position : movementLine.getFilteredPositions()) {
+                for (ChessPosition position : movementLine.getAttackedPositions()) {
                     underAttackByWhite.get(position).add(movementLine);
                 }
             }
             else {
-                for (ChessPosition position : movementLine.getFilteredPositions()) {
+                for (ChessPosition position : movementLine.getAttackedPositions()) {
                     underAttackByBlack.get(position).add(movementLine);
                 }
             }
@@ -220,6 +193,67 @@ public class ChessGame {
         }
         else {
             return kingPosBlack;
+        }
+    }
+
+    private boolean hasValidMoves(TeamColor team) {
+        ChessPiece piece;
+        for (ChessPosition position : validMovesFrom.keySet()) {
+            piece = board.getPiece(position);
+            if (piece != null && piece.getTeamColor() == team && !validMovesFrom.get(position).isEmpty()) {
+                System.out.println("Valid moves found: ");
+                for (ChessMove move : validMovesFrom.get(position)) {
+                    System.out.println(move);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void findAllValidMoves() {
+        for (ChessPosition position : board.getPositions()) {
+            validMovesFrom.put(position, validMovesPrecalculate(position));
+        }
+    }
+
+    private Collection<ChessMove> validMovesPrecalculate(ChessPosition startPosition) {
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+
+        TeamColor team = piece.getTeamColor();
+
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            return piece.pieceMoves(board, startPosition).stream()
+                    .filter(move -> isSafe(move.getEndPosition(), team))
+                    .collect(Collectors.toSet());
+        }
+
+        else {
+            Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+            System.out.println("Original moves");
+            System.out.println(moves);
+
+            if (isInCheck(team)) {
+                for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(kingPos(team))) {
+                    moves.removeIf(move ->
+                            !movementLine.getAttackedPositions().contains(move.getEndPosition()) &&
+                                    !movementLine.getPositionSequence().getFirst().equals(move.getEndPosition())
+                    );
+                }
+            }
+
+            for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(startPosition)) {
+                if (movementLine.isPinned(startPosition)) {
+                    moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
+                }
+            }
+
+            System.out.println("Filtered moves");
+            System.out.println(moves);
+            return moves;
         }
     }
 }

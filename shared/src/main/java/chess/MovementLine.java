@@ -13,17 +13,19 @@ public class MovementLine {
 
     private final ArrayList<ChessPosition> positionSequence = new ArrayList<>();
     private boolean noAttack = false;
+    private boolean isPawn = false;
     private final ChessGame.TeamColor team;
     private final ChessBoard board;
-    private Collection<ChessPosition> filteredPositions;
+    private Collection<ChessPosition> attackedPositions;
 
     // Constructor for lines along which an attack may be valid
     public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board) {
-        this(origin, direction, range, team, board, false);
+        this(origin, direction, range, team, board, false, false);
     }
 
     // Constructor that allows the validity of attack along a line to be disabled
-    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board, boolean noAttack) {
+    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board, boolean isPawn, boolean noAttack) {
+        this.isPawn = isPawn;
         this.noAttack = noAttack;
         this.team = team;
         this.board = board;
@@ -60,15 +62,15 @@ public class MovementLine {
             positionSequence.add(new ChessPosition(location[0], location[1]));
         }
 
-        setFilter();
+        findAttackedPositions();
     }
 
     public ChessGame.TeamColor getTeam() {
         return team;
     }
 
-    public Collection<ChessPosition> getFilteredPositions() {
-        return filteredPositions;
+    public Collection<ChessPosition> getAttackedPositions() {
+        return attackedPositions;
     }
 
     public ArrayList<ChessPosition> getPositionSequence() {
@@ -83,16 +85,19 @@ public class MovementLine {
      */
     public HashSet<ChessPosition> filterBlockedDestinations() {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
-        boolean blocked = false;
 
         for (ChessPosition destination : positionSequence.subList(1, positionSequence.size())) {
             // If the line is blocked or out of bounds, do not include the rest of the line
-            if (blocked || board.outOfBounds(destination)) {
+            if (board.outOfBounds(destination)) {
                 break;
             }
 
             ChessPiece targetPiece = board.getPiece(destination);
             if (targetPiece == null) {
+                // The pawn cannot move diagonally if no piece is there
+                if (isPawn && !noAttack) {
+                    break;
+                }
                 // The target square is empty, so movement is unhindered
                 filteredDestinations.add(destination);
             }
@@ -107,18 +112,45 @@ public class MovementLine {
                     break;
                 }
                 filteredDestinations.add(destination);
-                blocked = true;
+                break;
             }
         }
         return filteredDestinations;
     }
 
-    public void setFilter() {
-        filteredPositions = filterBlockedDestinations();
+    public void findAttackedPositions() {
+        HashSet<ChessPosition> filteredDestinations = new HashSet<>();
+
+        for (ChessPosition destination : positionSequence.subList(1, positionSequence.size())) {
+            // If the line is blocked or out of bounds, do not include the rest of the line
+            if (board.outOfBounds(destination)) {
+                break;
+            }
+
+            ChessPiece targetPiece = board.getPiece(destination);
+            if (targetPiece == null) {
+                // The target square is empty, so movement is unhindered
+                filteredDestinations.add(destination);
+                // The pawn can only threaten an adjacent diagonal square
+                if (isPawn && !noAttack) {
+                    break;
+                }
+            }
+            else {
+                // The target square contains another piece, so further movement is impossible
+                // However, if attacks are allowed along this line, the square is still "attacked"
+                if (noAttack) {
+                    break;
+                }
+                filteredDestinations.add(destination);
+                break;
+            }
+        }
+        attackedPositions = filteredDestinations;
     }
 
     public boolean isAttacked(ChessPosition position) {
-        return filteredPositions.contains(position);
+        return attackedPositions.contains(position);
     }
 
     public boolean isPinned(ChessPosition position) {
@@ -170,6 +202,7 @@ public class MovementLine {
         ORTHOGONAL,
         DIAGONAL,
         KNIGHT,
-        PAWN
+        W_PAWN,
+        B_PAWN
     }
 }
