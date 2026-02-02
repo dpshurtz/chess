@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class MovementLine {
 
     private final ArrayList<ChessPosition> positionSequence = new ArrayList<>();
-    private boolean noAttack = false;
-    private boolean isPawn = false;
+    private final boolean noAttack;
+    private final boolean isPawn;
     private final ChessGame.TeamColor team;
     private final ChessBoard board;
     private Collection<ChessPosition> attackedPositions;

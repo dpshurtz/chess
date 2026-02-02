@@ -129,6 +129,20 @@ public class ChessBoard {
 
         addPiece(move.getEndPosition(), newPiece);
         addPiece(move.getStartPosition(), null);
+
+        if (newPiece.getPieceType() == ChessPiece.PieceType.KING && move.getStartPosition().getColumn() == 5) {
+            int homeRow = move.getStartPosition().getRow();
+            if (move.getEndPosition().getColumn() == 3) {
+                ChessPosition rookStart = new ChessPosition(homeRow, 1);
+                addPiece(new ChessPosition(homeRow, 4), getPiece(rookStart));
+                addPiece(rookStart, null);
+            }
+            if (move.getEndPosition().getColumn() == 7) {
+                ChessPosition rookStart = new ChessPosition(homeRow, 8);
+                addPiece(new ChessPosition(homeRow, 6), getPiece(rookStart));
+                addPiece(rookStart, null);
+            }
+        }
     }
 
     public HashMap<ChessPosition, Collection<MovementLine>> getMovementLines() {
