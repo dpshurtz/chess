@@ -98,6 +98,8 @@ public class ChessGame {
         movementLinesByOrigin.get(origin).clear();
         movementLinesByOrigin.put(destination, piece.getMovementLines(board, destination));
 
+        enPassantSquare = null;
+
         if (type == ChessPiece.PieceType.KING) {
             if (teamTurn == TeamColor.WHITE) {
                 canCastleWhiteQ = false;
@@ -127,6 +129,15 @@ public class ChessGame {
                 else if (origin.getColumn() == 8) {
                     canCastleBlackK = false;
                 }
+            }
+        }
+
+        else if (type == ChessPiece.PieceType.PAWN) {
+            if (origin.getRow() == 2 && destination.getRow() == 4) {
+                enPassantSquare = new ChessPosition(3, origin.getColumn());
+            }
+            else if (origin.getRow() == 7 && destination.getRow() == 5) {
+                enPassantSquare = new ChessPosition(6, origin.getColumn());
             }
         }
 
@@ -372,6 +383,15 @@ public class ChessGame {
         }
 
         else {
+            if (enPassantSquare != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                int diffToEnPassantSquare = enPassantSquare.getColumn() - startPosition.getColumn();
+                if ((diffToEnPassantSquare == 1 || diffToEnPassantSquare == -1) &&
+                        ((team == TeamColor.WHITE && startPosition.getRow() == 5) ||
+                                (team == TeamColor.BLACK && startPosition.getRow() == 4))) {
+                    moves.add(new ChessMove(startPosition, enPassantSquare, null));
+                }
+            }
+
             if (isInCheck(team)) {
                 for (MovementLine movementLine : underAttackByTeam(enemyTeam(team)).get(kingPos(team))) {
                     moves.removeIf(move ->

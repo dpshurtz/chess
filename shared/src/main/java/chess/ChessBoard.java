@@ -123,6 +123,8 @@ public class ChessBoard {
         }
 
         ChessPiece newPiece = getPiece(move.getStartPosition());
+        ChessPiece oldPiece = getPiece(move.getEndPosition());
+
         if (move.getPromotionPiece() != null) {
             newPiece = new ChessPiece(newPiece.getTeamColor(), move.getPromotionPiece());
         }
@@ -142,6 +144,14 @@ public class ChessBoard {
                 addPiece(new ChessPosition(homeRow, 6), getPiece(rookStart));
                 addPiece(rookStart, null);
             }
+        }
+
+        else if (newPiece.getPieceType() == ChessPiece.PieceType.PAWN && oldPiece == null &&
+                move.getStartPosition().getColumn() != move.getEndPosition().getColumn()) {
+            addPiece(new ChessPosition(
+                    rowFlippedByColor(5, newPiece.getTeamColor()),
+                    move.getEndPosition().getColumn()), null
+            );
         }
     }
 
