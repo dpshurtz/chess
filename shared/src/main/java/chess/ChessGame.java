@@ -190,7 +190,6 @@ public class ChessGame {
         ChessPiece piece;
         piece = board.getPiece(new ChessPosition(1, 5));
         if (piece == null || piece.getPieceType() != ChessPiece.PieceType.KING || piece.getTeamColor() != TeamColor.WHITE) {
-            System.out.println("Yep, invalid start for castling");
             canCastleWhiteQ = false;
             canCastleWhiteK = false;
         }
@@ -305,7 +304,6 @@ public class ChessGame {
         for (ChessPosition position : validMovesFrom.keySet()) {
             piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() == team && !validMovesFrom.get(position).isEmpty()) {
-                System.out.println(validMovesFrom.get(position));
                 return false;
             }
         }
@@ -331,11 +329,8 @@ public class ChessGame {
             moves.removeIf(move -> !isSafe(move.getEndPosition(), team));
 
             ChessPosition[] castlePos = new ChessPosition[2];
-            System.out.println("Here we are");
             if (team == TeamColor.WHITE) {
-                System.out.println("That's what I thought");
                 if (canCastleWhiteQ){
-                    System.out.println("Huh? 1");
                     castlePos[0] = new ChessPosition(1, 4);
                     castlePos[1] = new ChessPosition(1, 3);
                     if (!isInCheck(team) &&
@@ -346,7 +341,6 @@ public class ChessGame {
                     }
                 }
                 if (canCastleWhiteK) {
-                    System.out.println("Huh? 2");
                     castlePos[0] = new ChessPosition(1, 6);
                     castlePos[1] = new ChessPosition(1, 7);
                     if (!isInCheck(team) &&
