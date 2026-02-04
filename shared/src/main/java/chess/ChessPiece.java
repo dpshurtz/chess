@@ -93,6 +93,12 @@ public class ChessPiece {
         return validMoves;
     }
 
+    /**
+     * Based on the piece at the start location, generates MovementLine objects
+     * representing the different lines along which the piece can move
+     *
+     * @return HashSet of MovementsLines available from the start location
+     */
     public HashSet<MovementLine> getMovementLines(ChessBoard board, ChessPosition myPosition) {
         HashSet<MovementLine> movementLines = new HashSet<>();
         PieceVectors pieceVectors = getPieceVectors(board, myPosition);
@@ -123,6 +129,12 @@ public class ChessPiece {
         return movementLines;
     }
 
+    /**
+     * Based on the piece at the start location, generates a PieceVectors object
+     * that is used to hold a collection of directions the piece can move with its range
+     *
+     * @return A PieceVectors object, which holds all directions a piece may move and its range
+     */
     public PieceVectors getPieceVectors(ChessBoard board, ChessPosition myPosition) {
         HashSet<Direction> directions = new HashSet<>();
         int range = 0;

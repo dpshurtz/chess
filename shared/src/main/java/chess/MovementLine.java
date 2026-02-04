@@ -62,17 +62,27 @@ public class MovementLine {
             positionSequence.add(new ChessPosition(location[0], location[1]));
         }
 
+        // Initializes the attackedPositions set
         findAttackedPositions();
     }
 
+    /**
+     * @return Which team this movement line corresponds to
+     */
     public ChessGame.TeamColor getTeam() {
         return team;
     }
 
+    /**
+     * @return A set of all positions attacked by this movement line
+     */
     public Collection<ChessPosition> getAttackedPositions() {
         return attackedPositions;
     }
 
+    /**
+     * @return The sequence of positions along this line, from its origin out to its range
+     */
     public ArrayList<ChessPosition> getPositionSequence() {
         return positionSequence;
     }
@@ -86,6 +96,7 @@ public class MovementLine {
     public HashSet<ChessPosition> filterBlockedDestinations() {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
 
+        // Loop through all positions except the line's origin
         for (ChessPosition destination : positionSequence.subList(1, positionSequence.size())) {
             // If the line is blocked or out of bounds, do not include the rest of the line
             if (board.outOfBounds(destination)) {
@@ -118,9 +129,15 @@ public class MovementLine {
         return filteredDestinations;
     }
 
+    /**
+     * Updates the attackedPositions set
+     * Attacked squares are distinct from the filtered squares
+     * because a piece may threaten a location it cannot currently move to
+     */
     public void findAttackedPositions() {
         HashSet<ChessPosition> filteredDestinations = new HashSet<>();
 
+        // Loop through all positions except the line's origin
         for (ChessPosition destination : positionSequence.subList(1, positionSequence.size())) {
             // If the line is blocked or out of bounds, do not include the rest of the line
             if (board.outOfBounds(destination)) {
@@ -149,15 +166,19 @@ public class MovementLine {
         attackedPositions = filteredDestinations;
     }
 
-    public boolean isAttacked(ChessPosition position) {
-        return attackedPositions.contains(position);
-    }
-
+    /**
+     * Determines if a piece is the only thing keeping the king safe from
+     * an attack along this movement line
+     *
+     * @return A boolean indicating whether the piece at the specified position
+     * is pinned to the movement line
+     */
     public boolean isPinned(ChessPosition position) {
         boolean pastBlockingPiece = false;
         ChessPiece target;
 
         for (ChessPosition destination : positionSequence) {
+            // Skip through the movement line until the index past the given location
             if (!pastBlockingPiece) {
                 if (destination.equals(position)) {
                     pastBlockingPiece = true;
@@ -165,6 +186,8 @@ public class MovementLine {
                 continue;
             }
 
+            // If another piece is encountered, there is no pin
+            // If the king is found first, there is a pin
             target = board.getPiece(destination);
             if (target != null) {
                 return (target.getPieceType() == ChessPiece.PieceType.KING && target.getTeamColor() != team);

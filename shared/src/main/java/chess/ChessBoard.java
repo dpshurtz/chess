@@ -14,6 +14,7 @@ public class ChessBoard {
     private final HashSet<ChessPosition> positions = new HashSet<>();
 
     public ChessBoard() {
+        // Generates a set of the positions on the board
         for (int i=1; i<=squares.length; i++) {
             for (int j=1; j<=squares.length; j++) {
                 positions.add(new ChessPosition(i, j));
@@ -117,37 +118,73 @@ public class ChessBoard {
         return startPositions;
     }
 
+    /**
+     * Makes a move in a chess game
+     *
+     * @param move chess move to perform
+     * @throws InvalidMoveException if move is invalid
+     */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         if (outOfBounds(move.getEndPosition()) || outOfBounds(move.getStartPosition())) {
             throw new InvalidMoveException();
         }
 
-        ChessPiece newPiece = getPiece(move.getStartPosition());
-        ChessPiece oldPiece = getPiece(move.getEndPosition());
+        // Check for special move types that change a piece not on the move squares
+        moveRookIfCastled(move);
+        removePawnIfEnPassant(move);
 
+        // Find promotion piece, if any
+        ChessPiece newPiece = getPiece(move.getStartPosition());
         if (move.getPromotionPiece() != null) {
             newPiece = new ChessPiece(newPiece.getTeamColor(), move.getPromotionPiece());
         }
 
+        // Add the moving piece to the destination, and remove it from the origin
         addPiece(move.getEndPosition(), newPiece);
         addPiece(move.getStartPosition(), null);
+    }
 
-        if (newPiece.getPieceType() == ChessPiece.PieceType.KING && move.getStartPosition().getColumn() == 5) {
+    /**
+     * Checks if a move is a castle, then moves the corresponding
+     * rook to its new location if it is
+     *
+     * @param move chess move being performed
+     */
+    private void moveRookIfCastled(ChessMove move) {
+        ChessPiece piece = getPiece(move.getStartPosition());
+
+        // Check if a king is moving from the starting square
+        if (piece.getPieceType() == ChessPiece.PieceType.KING && move.getStartPosition().getColumn() == 5) {
             int homeRow = move.getStartPosition().getRow();
             if (move.getEndPosition().getColumn() == 3) {
+                // King moved two squares queenside, so move that rook
                 ChessPosition rookStart = new ChessPosition(homeRow, 1);
                 addPiece(new ChessPosition(homeRow, 4), getPiece(rookStart));
                 addPiece(rookStart, null);
             }
-            if (move.getEndPosition().getColumn() == 7) {
+            else if (move.getEndPosition().getColumn() == 7) {
+                // King moved two squares kingside, so move that rook
                 ChessPosition rookStart = new ChessPosition(homeRow, 8);
                 addPiece(new ChessPosition(homeRow, 6), getPiece(rookStart));
                 addPiece(rookStart, null);
             }
         }
+    }
 
-        else if (newPiece.getPieceType() == ChessPiece.PieceType.PAWN && oldPiece == null &&
+    /**
+     * Checks if a move is an en passant, then removes the pawn
+     * that was captured if it is
+     *
+     * @param move chess move being performed
+     */
+    private void removePawnIfEnPassant(ChessMove move) {
+        ChessPiece newPiece = getPiece(move.getStartPosition());
+        ChessPiece oldPiece = getPiece(move.getEndPosition());
+
+        // Check if a pawn is moving to an empty square on a new column
+        if (newPiece.getPieceType() == ChessPiece.PieceType.PAWN && oldPiece == null &&
                 move.getStartPosition().getColumn() != move.getEndPosition().getColumn()) {
+            // Remove the pawn that must have been taken by the en passant
             addPiece(new ChessPosition(
                     rowFlippedByColor(5, newPiece.getTeamColor()),
                     move.getEndPosition().getColumn()), null
@@ -155,15 +192,24 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Loops through every square on the board and gets the movement lines from that position
+     *
+     * @return HashMap mapping each location on the board to the collection of
+     * movement lines available at that location. If there is no piece at a location,
+     * that collection is empty in the map.
+     */
     public HashMap<ChessPosition, Collection<MovementLine>> getMovementLines() {
         HashMap<ChessPosition, Collection<MovementLine>> movementLines = new HashMap<>();
         ChessPiece piece;
 
         for (ChessPosition position : positions){
             piece = getPiece(position);
+            // If there is a piece, find which movement lines it can take
             if (piece != null) {
                 movementLines.put(position, piece.getMovementLines(this, position));
             }
+            // If there is no piece, add an empty set
             else {
                 movementLines.put(position, new HashSet<>());
             }
@@ -172,6 +218,9 @@ public class ChessBoard {
         return movementLines;
     }
 
+    /**
+     * @return A set of all positions on the board
+     */
     public HashSet<ChessPosition> getPositions() {
         return positions;
     }
