@@ -28,12 +28,8 @@ public class ChessGame {
     private ChessPosition kingPosWhite;
     private ChessPosition kingPosBlack;
 
-    // Values indicating validity of special moves
-    private boolean canCastleWhiteQ = true;
-    private boolean canCastleWhiteK = true;
-    private boolean canCastleBlackQ = true;
-    private boolean canCastleBlackK = true;
-    private ChessPosition enPassantSquare = null;
+    // Indicates validity of special moves
+    private final SpecialMoveValidator validator = new SpecialMoveValidator();
 
     public ChessGame() {
         board.resetBoard();
@@ -118,84 +114,14 @@ public class ChessGame {
         }
 
         // Update validity of special moves
-        updateCastlingValidity(move, type);
-        updateEnPassantValidity(move, type);
+        validator.updateCastlingValidity(move, piece);
+        validator.updateEnPassantValidity(move, piece);
 
         // Update attacked squares and precalculate valid moves
         resetAllAttacks();
         findAllValidMoves();
 
         teamTurn = enemyTeam(teamTurn);
-    }
-
-    /**
-     * Check if a moved piece was a king or rook and
-     * update castling validity accordingly
-     *
-     * @param move chess move that was performed
-     * @param pieceType type of piece that was moved
-     */
-    private void updateCastlingValidity(ChessMove move, ChessPiece.PieceType pieceType) {
-        ChessPosition origin = move.getStartPosition();
-        ChessPosition destination = move.getEndPosition();
-
-        // If a king moves, it is no longer allowed to castle
-        if (pieceType == ChessPiece.PieceType.KING) {
-            if (teamTurn == TeamColor.WHITE) {
-                canCastleWhiteQ = false;
-                canCastleWhiteK = false;
-                kingPosWhite = destination;
-            }
-            else {
-                canCastleBlackQ = false;
-                canCastleBlackK = false;
-                kingPosBlack = destination;
-            }
-        }
-
-        // If a rook moves, it is no longer allowed to castle
-        else if (pieceType == ChessPiece.PieceType.ROOK) {
-            if (teamTurn == TeamColor.WHITE) {
-                if (origin.getColumn() == 1) {
-                    canCastleWhiteQ = false;
-                }
-                else if (origin.getColumn() == 8) {
-                    canCastleWhiteK = false;
-                }
-            }
-            else {
-                if (origin.getColumn() == 1) {
-                    canCastleBlackQ = false;
-                }
-                else if (origin.getColumn() == 8) {
-                    canCastleBlackK = false;
-                }
-            }
-        }
-    }
-
-    /**
-     * Check if a moved piece was a pawn moving two squares
-     * then mark the square it jumped as an en passant target for the next turn
-     *
-     * @param move chess move that was performed
-     * @param pieceType type of piece that was moved
-     */
-    private void updateEnPassantValidity(ChessMove move, ChessPiece.PieceType pieceType) {
-        ChessPosition origin = move.getStartPosition();
-        ChessPosition destination = move.getEndPosition();
-
-        // Reset en passant validity
-        enPassantSquare = null;
-        if (pieceType == ChessPiece.PieceType.PAWN) {
-            // If a pawn moves two squares, it may be taken by en passant
-            if (origin.getRow() == 2 && destination.getRow() == 4) {
-                enPassantSquare = new ChessPosition(3, origin.getColumn());
-            }
-            else if (origin.getRow() == 7 && destination.getRow() == 5) {
-                enPassantSquare = new ChessPosition(6, origin.getColumn());
-            }
-        }
     }
 
     /**
@@ -237,52 +163,10 @@ public class ChessGame {
     public void setBoard(ChessBoard board) {
         this.board = board;
         movementLinesByOrigin = board.getMovementLines();
-        reinitializeCastlingValidity();
+        validator.reinitializeCastlingValidity(board);
         resetAllAttacks();
         setKingPositions();
         findAllValidMoves();
-    }
-
-    /**
-     * Checks if rooks and kings are in their starting positions
-     * and disables their ability to castle if they are not
-     */
-    private void reinitializeCastlingValidity() {
-        ChessPiece piece;
-
-        // Check white king's starting position
-        piece = board.getPiece(new ChessPosition(1, 5));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.KING || piece.getTeamColor() != TeamColor.WHITE) {
-            canCastleWhiteQ = false;
-            canCastleWhiteK = false;
-        }
-
-        // Check white rooks' starting positions
-        piece = board.getPiece(new ChessPosition(1, 1));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.ROOK || piece.getTeamColor() != TeamColor.WHITE) {
-            canCastleWhiteQ = false;
-        }
-        piece = board.getPiece(new ChessPosition(1, 8));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.ROOK || piece.getTeamColor() != TeamColor.WHITE) {
-            canCastleWhiteK = false;
-        }
-
-        // Check black king's starting position
-        piece = board.getPiece(new ChessPosition(8, 5));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.KING || piece.getTeamColor() != TeamColor.BLACK) {
-            canCastleBlackQ = false;
-            canCastleBlackK = false;
-        }
-
-        // Check black rooks' starting positions
-        piece = board.getPiece(new ChessPosition(8, 1));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.ROOK || piece.getTeamColor() != TeamColor.BLACK) {
-            canCastleBlackQ = false;
-        }
-        piece = board.getPiece(new ChessPosition(8, 8));
-        if (piece == null || piece.getPieceType() != ChessPiece.PieceType.ROOK || piece.getTeamColor() != TeamColor.BLACK) {
-            canCastleBlackK = false;
-        }
     }
 
     /**
@@ -332,7 +216,7 @@ public class ChessGame {
      * @param myTeam the player's team
      * @return True if the square is safe
      */
-    private boolean isSafe(ChessPosition position, TeamColor myTeam) {
+    public boolean isSafe(ChessPosition position, TeamColor myTeam) {
         return underAttackByTeam(enemyTeam(myTeam)).get(position).isEmpty();
     }
 
@@ -440,11 +324,11 @@ public class ChessGame {
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             // Kings cannot move into check
             moves.removeIf(move -> !isSafe(move.getEndPosition(), team));
-            addCastlingIfValid(moves, startPosition);
+            validator.addCastlingIfValid(moves, startPosition, this);
         }
 
         else {
-            addEnPassantIfValid(moves, startPosition);
+            validator.addEnPassantIfValid(moves, startPosition, this);
 
             // If king is in check, filter moves to block any lines threatening the king
             if (isInCheck(team)) {
@@ -462,92 +346,8 @@ public class ChessGame {
                     moves.removeIf(move -> !movementLine.getPositionSequence().contains(move.getEndPosition()));
                 }
             }
-
         }
         return moves;
-    }
-
-    /**
-     * Checks if a king can castle, and adds that as a valid move if it can
-     *
-     * @param moves the collection of moves to which to add castling (if valid)
-     * @param startPosition the king's position
-     */
-    private void addCastlingIfValid(Collection<ChessMove> moves, ChessPosition startPosition) {
-        TeamColor team = board.getPiece(startPosition).getTeamColor();
-
-        ChessPosition[] castlePos = new ChessPosition[2];
-        if (team == TeamColor.WHITE) {
-            if (canCastleWhiteQ){
-                castlePos[0] = new ChessPosition(1, 4);
-                castlePos[1] = new ChessPosition(1, 3);
-                // King cannot start in check or move through check while castling
-                if (!isInCheck(team) &&
-                        board.getPiece(castlePos[0]) == null && isSafe(castlePos[0], team) &&
-                        board.getPiece(castlePos[1]) == null && isSafe(castlePos[1], team)
-                ) {
-                    moves.add(new ChessMove(startPosition, castlePos[1], null));
-                }
-            }
-            if (canCastleWhiteK) {
-                castlePos[0] = new ChessPosition(1, 6);
-                castlePos[1] = new ChessPosition(1, 7);
-                // King cannot start in check or move through check while castling
-                if (!isInCheck(team) &&
-                        board.getPiece(castlePos[0]) == null && isSafe(castlePos[0], team) &&
-                        board.getPiece(castlePos[1]) == null && isSafe(castlePos[1], team)
-                ) {
-                    moves.add(new ChessMove(startPosition, castlePos[1], null));
-                }
-            }
-        }
-        else {
-            if (canCastleBlackQ) {
-                castlePos[0] = new ChessPosition(8, 4);
-                castlePos[1] = new ChessPosition(8, 3);
-                // King cannot start in check or move through check while castling
-                if (!isInCheck(team) &&
-                        board.getPiece(castlePos[0]) == null && isSafe(castlePos[0], team) &&
-                        board.getPiece(castlePos[1]) == null && isSafe(castlePos[1], team)
-                ) {
-                    moves.add(new ChessMove(startPosition, castlePos[1], null));
-                }
-            }
-            if (canCastleBlackK) {
-                castlePos[0] = new ChessPosition(8, 6);
-                castlePos[1] = new ChessPosition(8, 7);
-                // King cannot start in check or move through check while castling
-                if (!isInCheck(team) &&
-                        board.getPiece(castlePos[0]) == null && isSafe(castlePos[0], team) &&
-                        board.getPiece(castlePos[1]) == null && isSafe(castlePos[1], team)
-                ) {
-                    moves.add(new ChessMove(startPosition, castlePos[1], null));
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks if a piece can perform en passant, and adds that as a valid move if it can
-     *
-     * @param moves the collection of moves to which to add en passant (if valid)
-     * @param startPosition the piece's position
-     */
-    private void addEnPassantIfValid(Collection<ChessMove> moves, ChessPosition startPosition) {
-        ChessPiece piece = board.getPiece(startPosition);
-        TeamColor team = piece.getTeamColor();
-
-        // Check if the piece is a pawn and if an enemy pawn moved twice last turn
-        if (enPassantSquare != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            int diffToEnPassantSquare = enPassantSquare.getColumn() - startPosition.getColumn();
-            // To perform en passant, the pawn must be on the same row
-            // as the enemy pawn that moved twice, one column away
-            if ((diffToEnPassantSquare == 1 || diffToEnPassantSquare == -1) &&
-                    ((team == TeamColor.WHITE && startPosition.getRow() == 5) ||
-                            (team == TeamColor.BLACK && startPosition.getRow() == 4))) {
-                moves.add(new ChessMove(startPosition, enPassantSquare, null));
-            }
-        }
     }
 
     @Override

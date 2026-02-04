@@ -19,18 +19,40 @@ public class MovementLine {
     private Collection<ChessPosition> attackedPositions;
 
     // Constructor for lines along which an attack may be valid
-    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board) {
+    public MovementLine(ChessPosition origin, Direction direction, int range, 
+                        ChessGame.TeamColor team, ChessBoard board) {
         this(origin, direction, range, team, board, false, false);
     }
 
     // Constructor that allows the validity of attack along a line to be disabled
-    public MovementLine(ChessPosition origin, Direction direction, int range, ChessGame.TeamColor team, ChessBoard board, boolean isPawn, boolean noAttack) {
+    public MovementLine(ChessPosition origin, Direction direction, int range, 
+                        ChessGame.TeamColor team, ChessBoard board, boolean isPawn, boolean noAttack) {
         this.isPawn = isPawn;
         this.noAttack = noAttack;
         this.team = team;
         this.board = board;
 
         // Generates a vector representing a single step for each movement direction
+        int[] unitVector = getUnitVector(direction);
+
+        // Moves forward a unit in the given direction, repeating based on the range
+        // Adds each step to the sequence of positions in the line
+        int[] location = new int[]{ origin.getRow(), origin.getColumn() };
+        positionSequence.add(origin);
+        for (int i = 0; i < range; i++) {
+            location[0] += unitVector[0];
+            location[1] += unitVector[1];
+            positionSequence.add(new ChessPosition(location[0], location[1]));
+        }
+
+        // Initializes the attackedPositions set
+        findAttackedPositions();
+    }
+
+    /**
+     * Converts a chess direction into a 2d vector, represented by an int[2]
+     */
+    private static int[] getUnitVector(Direction direction) {
         int[] unitVector;
         switch (direction) {
             case UP ->          unitVector = new int[]{ 1,  0};
@@ -51,19 +73,7 @@ public class MovementLine {
             case M8_KNIGHT ->   unitVector = new int[]{-1,  2};
             default ->          unitVector = new int[]{ 0,  0};
         }
-
-        // Moves forward a unit in the given direction, repeating based on the range
-        // Adds each step to the sequence of positions in the line
-        int[] location = new int[]{ origin.getRow(), origin.getColumn() };
-        positionSequence.add(origin);
-        for (int i = 0; i < range; i++) {
-            location[0] += unitVector[0];
-            location[1] += unitVector[1];
-            positionSequence.add(new ChessPosition(location[0], location[1]));
-        }
-
-        // Initializes the attackedPositions set
-        findAttackedPositions();
+        return unitVector;
     }
 
     /**
