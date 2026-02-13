@@ -268,6 +268,7 @@ public class ChessGame {
     }
 
     /**
+     * @param team the player's team
      * @return The position of the king of the specified color
      */
     private ChessPosition kingPos(TeamColor team) {
