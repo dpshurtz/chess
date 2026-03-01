@@ -1,4 +1,4 @@
 package serviceobjects;
 
-public record CreateGameResult() {
+public record CreateGameResult(int gameID) {
 }

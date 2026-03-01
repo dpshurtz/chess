@@ -1,4 +1,4 @@
 package serviceobjects;
 
-public record CreateGameRequest() {
+public record CreateGameRequest(String gameName, String authToken) {
 }
