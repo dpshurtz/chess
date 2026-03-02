@@ -1,4 +1,4 @@
 package serviceobjects;
 
-public record JoinGameRequest(String playerColor, String gameID, String authToken) {
+public record JoinGameRequest(String playerColor, int gameID, String authToken) {
 }

@@ -1,8 +1,16 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.UnauthorizedResponse;
+import model.AuthData;
+import model.GameData;
 import serviceobjects.*;
+
+import java.util.Objects;
 
 public class GameService {
     private final AuthDAO authDAO;
@@ -13,15 +21,61 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public ListGamesResult listGames(ListGamesRequest listGamesRequest) {
-        return null;
+    public ListGamesResult listGames(ListGamesRequest listGamesRequest)
+            throws UnauthorizedResponse {
+        if (authDAO.getAuth(listGamesRequest.authToken()) == null) {
+            throw new UnauthorizedResponse("unauthorized");
+        }
+
+        return new ListGamesResult(gameDAO.listGames());
     }
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest) {
-        return null;
+    public CreateGameResult createGame(CreateGameRequest createGameRequest)
+            throws UnauthorizedResponse, DataAccessException {
+        if (authDAO.getAuth(createGameRequest.authToken()) == null) {
+            throw new UnauthorizedResponse("unauthorized");
+        }
+
+        return gameDAO.createGame(createGameRequest.gameName());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) {
+    public void joinGame(JoinGameRequest joinGameRequest)
+            throws UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, DataAccessException {
+        AuthData authData = authDAO.getAuth(joinGameRequest.authToken());
+        if (authData == null) {
+            throw new UnauthorizedResponse("unauthorized");
+        }
 
+        GameData game = gameDAO.getGame(joinGameRequest.gameID());
+        GameData newGame;
+        if (Objects.equals(joinGameRequest.playerColor(), "WHITE")) {
+            if (game.whiteUsername() != null) {
+                throw new ForbiddenResponse("already taken");
+            }
+            newGame = new GameData(
+                    game.gameID(),
+                    authData.username(),
+                    game.blackUsername(),
+                    game.gameName(),
+                    game.game()
+            );
+        }
+        else if (Objects.equals(joinGameRequest.playerColor(), "BLACK")) {
+            if (game.blackUsername() != null) {
+                throw new ForbiddenResponse("already taken");
+            }
+            newGame = new GameData(
+                    game.gameID(),
+                    game.whiteUsername(),
+                    authData.username(),
+                    game.gameName(),
+                    game.game()
+            );
+        }
+        else {
+            throw new BadRequestResponse("invalid color");
+        }
+
+        gameDAO.updateGame(newGame);
     }
 }
