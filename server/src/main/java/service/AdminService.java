@@ -5,9 +5,15 @@ import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 
 public class AdminService {
-    private AuthDAO authDAO;
-    private GameDAO gameDAO;
-    private UserDAO userDAO;
+    private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
+    private final UserDAO userDAO;
+
+    public AdminService(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
+        this.userDAO = userDAO;
+    }
 
     public void clear() {
         authDAO.clear();
