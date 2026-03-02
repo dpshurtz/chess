@@ -24,7 +24,7 @@ public class GameService {
     public ListGamesResult listGames(ListGamesRequest listGamesRequest, String authToken)
             throws UnauthorizedResponse {
         if (authDAO.getAuth(authToken) == null) {
-            throw new UnauthorizedResponse("unauthorized");
+            throw new UnauthorizedResponse("Error: unauthorized");
         }
 
         return new ListGamesResult(gameDAO.listGames());
@@ -33,7 +33,7 @@ public class GameService {
     public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken)
             throws UnauthorizedResponse, DataAccessException {
         if (authDAO.getAuth(authToken) == null) {
-            throw new UnauthorizedResponse("unauthorized");
+            throw new UnauthorizedResponse("Error: unauthorized");
         }
 
         return gameDAO.createGame(createGameRequest.gameName());
@@ -43,14 +43,14 @@ public class GameService {
             throws UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, DataAccessException {
         AuthData authData = authDAO.getAuth(authToken);
         if (authData == null) {
-            throw new UnauthorizedResponse("unauthorized");
+            throw new UnauthorizedResponse("Error: unauthorized");
         }
 
         GameData game = gameDAO.getGame(joinGameRequest.gameID());
         GameData newGame;
         if (Objects.equals(joinGameRequest.playerColor(), "WHITE")) {
             if (game.whiteUsername() != null) {
-                throw new ForbiddenResponse("already taken");
+                throw new ForbiddenResponse("Error: already taken");
             }
             newGame = new GameData(
                     game.gameID(),
@@ -62,7 +62,7 @@ public class GameService {
         }
         else if (Objects.equals(joinGameRequest.playerColor(), "BLACK")) {
             if (game.blackUsername() != null) {
-                throw new ForbiddenResponse("already taken");
+                throw new ForbiddenResponse("Error: already taken");
             }
             newGame = new GameData(
                     game.gameID(),
@@ -73,7 +73,7 @@ public class GameService {
             );
         }
         else {
-            throw new BadRequestResponse("invalid color");
+            throw new BadRequestResponse("Error: bad request");
         }
 
         gameDAO.updateGame(newGame);

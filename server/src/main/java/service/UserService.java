@@ -24,7 +24,7 @@ public class UserService {
             throws ForbiddenResponse, DataAccessException {
         UserData user = userDAO.getUser(registerRequest.username());
         if (user != null) {
-            throw new ForbiddenResponse("already taken");
+            throw new ForbiddenResponse("Error: already taken");
         }
         userDAO.createUser(new UserData(
                 registerRequest.username(),
@@ -41,10 +41,10 @@ public class UserService {
             throws UnauthorizedResponse, DataAccessException {
         UserData user = userDAO.getUser(loginRequest.username());
         if (user == null) {
-            throw new UnauthorizedResponse("Username not found");
+            throw new UnauthorizedResponse("Error: unauthorized");
         }
         else if (!Objects.equals(user.password(), loginRequest.password())) {
-            throw new UnauthorizedResponse("Incorrect password");
+            throw new UnauthorizedResponse("Error: unauthorized");
         }
 
         String authToken = AdminService.generateToken();

@@ -2,9 +2,11 @@ package server;
 
 import dataaccess.*;
 import handler.AdminHandler;
+import handler.ExceptionHandler;
 import handler.GameHandler;
 import handler.UserHandler;
 import io.javalin.*;
+import io.javalin.http.*;
 import service.AdminService;
 import service.GameService;
 import service.UserService;
@@ -22,6 +24,7 @@ public class Server {
         AdminHandler adminHandler = new AdminHandler(new AdminService(authDAO, gameDAO, userDAO));
         GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
         UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
+        ExceptionHandler exceptionHandler = new ExceptionHandler();
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -33,6 +36,9 @@ public class Server {
         javalin.get("/game", gameHandler::listGames);
         javalin.post("/game", gameHandler::createGame);
         javalin.put("/game", gameHandler::joinGame);
+
+        javalin.exception(HttpResponseException.class, exceptionHandler::httpExceptionHandler);
+        javalin.exception(DataAccessException.class, exceptionHandler::dataExceptionHandler);
 
     }
 
