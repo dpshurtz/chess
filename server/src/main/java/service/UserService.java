@@ -53,8 +53,8 @@ public class UserService {
         return new LoginResult(loginRequest.username(), authToken);
     }
 
-    public void logout(LogoutRequest logoutRequest)
+    public void logout(LogoutRequest logoutRequest, String authToken)
             throws DataAccessException {
-        authDAO.deleteAuth(logoutRequest.authToken());
+        authDAO.deleteAuth(authToken);
     }
 }

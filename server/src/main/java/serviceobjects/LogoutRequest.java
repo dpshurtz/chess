@@ -1,4 +1,4 @@
 package serviceobjects;
 
-public record LogoutRequest(String authToken) {
+public record LogoutRequest() {
 }

@@ -21,27 +21,27 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public ListGamesResult listGames(ListGamesRequest listGamesRequest)
+    public ListGamesResult listGames(ListGamesRequest listGamesRequest, String authToken)
             throws UnauthorizedResponse {
-        if (authDAO.getAuth(listGamesRequest.authToken()) == null) {
+        if (authDAO.getAuth(authToken) == null) {
             throw new UnauthorizedResponse("unauthorized");
         }
 
         return new ListGamesResult(gameDAO.listGames());
     }
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest)
+    public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken)
             throws UnauthorizedResponse, DataAccessException {
-        if (authDAO.getAuth(createGameRequest.authToken()) == null) {
+        if (authDAO.getAuth(authToken) == null) {
             throw new UnauthorizedResponse("unauthorized");
         }
 
         return gameDAO.createGame(createGameRequest.gameName());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest)
+    public void joinGame(JoinGameRequest joinGameRequest, String authToken)
             throws UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, DataAccessException {
-        AuthData authData = authDAO.getAuth(joinGameRequest.authToken());
+        AuthData authData = authDAO.getAuth(authToken);
         if (authData == null) {
             throw new UnauthorizedResponse("unauthorized");
         }
