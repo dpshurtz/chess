@@ -2,9 +2,12 @@ package handler;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
+import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.UnauthorizedResponse;
 import service.GameService;
-import serviceobjects.JoinGameRequest;
+import serviceobjects.*;
 
 public class GameHandler {
     private final GameService gameService;
@@ -13,15 +16,28 @@ public class GameHandler {
         this.gameService = gameService;
     }
 
-    public void listGames(Context ctx) {
+    public void listGames(Context ctx)
+            throws UnauthorizedResponse {
+        String authToken = ctx.header("Authorization");
+        ListGamesRequest listGamesRequest = new Gson().fromJson(ctx.body(), ListGamesRequest.class);
 
+        ListGamesResult listGamesResult = gameService.listGames(listGamesRequest, authToken);
+        ctx.result(new Gson().toJson(listGamesResult));
+        ctx.status(200);
     }
 
-    public void createGame(Context ctx) {
+    public void createGame(Context ctx)
+            throws UnauthorizedResponse, DataAccessException {
+        String authToken = ctx.header("Authorization");
+        CreateGameRequest createGameRequest = new Gson().fromJson(ctx.body(), CreateGameRequest.class);
 
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, authToken);
+        ctx.result(new Gson().toJson(createGameResult));
+        ctx.status(200);
     }
 
-    public void joinGame(Context ctx) throws DataAccessException {
+    public void joinGame(Context ctx)
+            throws UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, DataAccessException {
         String authToken = ctx.header("Authorization");
         JoinGameRequest joinGameRequest = new Gson().fromJson(ctx.body(), JoinGameRequest.class);
 

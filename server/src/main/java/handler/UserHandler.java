@@ -15,7 +15,8 @@ public class UserHandler {
         this.userService = userService;
     }
 
-    public void register(Context ctx) throws ForbiddenResponse, DataAccessException {
+    public void register(Context ctx)
+            throws ForbiddenResponse, DataAccessException {
         RegisterRequest registerRequest = new Gson().fromJson(ctx.body(), RegisterRequest.class);
 
         RegisterResult registerResult = userService.register(registerRequest);
@@ -23,7 +24,8 @@ public class UserHandler {
         ctx.status(200);
     }
 
-    public void login(Context ctx) throws UnauthorizedResponse, DataAccessException {
+    public void login(Context ctx)
+            throws UnauthorizedResponse, DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(ctx.body(), LoginRequest.class);
 
         LoginResult loginResult = userService.login(loginRequest);
@@ -31,10 +33,12 @@ public class UserHandler {
         ctx.status(200);
     }
 
-    public void logout(Context ctx) throws DataAccessException {
+    public void logout(Context ctx)
+            throws DataAccessException {
         String authToken = ctx.header("Authorization");
+        LogoutRequest logoutRequest = new Gson().fromJson(ctx.body(), LogoutRequest.class);
 
-        userService.logout(new LogoutRequest(), authToken);
+        userService.logout(logoutRequest, authToken);
         ctx.status(200);
     }
 }
