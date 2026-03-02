@@ -1,19 +1,28 @@
 package server;
 
+import dataaccess.*;
 import handler.AdminHandler;
 import handler.GameHandler;
 import handler.UserHandler;
 import io.javalin.*;
+import service.AdminService;
+import service.GameService;
+import service.UserService;
 
 public class Server {
 
     private final Javalin javalin;
 
-    private final AdminHandler adminHandler = new AdminHandler();
-    private final GameHandler gameHandler = new GameHandler();
-    private final UserHandler userHandler = new UserHandler();
-
     public Server() {
+
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+        UserDAO userDAO = new MemoryUserDAO();
+
+        AdminHandler adminHandler = new AdminHandler(new AdminService(authDAO, gameDAO, userDAO));
+        GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
+        UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
