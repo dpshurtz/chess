@@ -22,8 +22,4 @@ public class AdminService {
         gameDAO.clear();
         userDAO.clear();
     }
-
-    public static String generateToken() {
-        return UUID.randomUUID().toString();
-    }
 }

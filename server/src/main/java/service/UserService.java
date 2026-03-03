@@ -11,6 +11,7 @@ import model.UserData;
 import serviceobjects.*;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class UserService {
     private final AuthDAO authDAO;
@@ -40,7 +41,7 @@ public class UserService {
                 registerRequest.password(),
                 registerRequest.email()));
 
-        String authToken = AdminService.generateToken();
+        String authToken = generateToken();
         authDAO.createAuth(new AuthData(authToken, registerRequest.username()));
 
         return new RegisterResult(registerRequest.username(), authToken);
@@ -63,7 +64,7 @@ public class UserService {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
 
-        String authToken = AdminService.generateToken();
+        String authToken = generateToken();
         authDAO.createAuth(new AuthData(authToken, loginRequest.username()));
 
         return new LoginResult(loginRequest.username(), authToken);
@@ -76,5 +77,9 @@ public class UserService {
         }
 
         authDAO.deleteAuth(authToken);
+    }
+
+    private String generateToken() {
+        return UUID.randomUUID().toString();
     }
 }
