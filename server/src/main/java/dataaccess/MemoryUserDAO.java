@@ -31,4 +31,8 @@ public class MemoryUserDAO implements UserDAO{
     public void clear() {
         userTable = new HashSet<>();
     }
+
+    public Collection<UserData> getUserTable() {
+        return userTable;
+    }
 }

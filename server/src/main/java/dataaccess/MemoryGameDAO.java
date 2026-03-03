@@ -53,4 +53,8 @@ public class MemoryGameDAO implements GameDAO{
     public void clear() {
         gameTable = new HashSet<>();
     }
+
+    public Collection<GameData> getGameTable() {
+        return gameTable;
+    }
 }

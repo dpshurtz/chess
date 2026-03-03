@@ -42,4 +42,8 @@ public class MemoryAuthDAO implements AuthDAO{
     public void clear() {
         authTable = new HashSet<>();
     }
+
+    public Collection<AuthData> getAuthTable() {
+        return authTable;
+    }
 }
