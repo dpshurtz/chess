@@ -32,6 +32,10 @@ public class GameService {
 
     public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken)
             throws UnauthorizedResponse, DataAccessException {
+        if (createGameRequest.gameName() == null) {
+            throw new BadRequestResponse("Error: bad request");
+        }
+
         if (authDAO.getAuth(authToken) == null) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
@@ -47,6 +51,10 @@ public class GameService {
         }
 
         GameData game = gameDAO.getGame(joinGameRequest.gameID());
+        if (game == null) {
+            throw new BadRequestResponse("Error: bad request");
+        }
+
         GameData newGame;
         if (Objects.equals(joinGameRequest.playerColor(), "WHITE")) {
             if (game.whiteUsername() != null) {
