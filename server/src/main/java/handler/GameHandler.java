@@ -11,6 +11,7 @@ import serviceobjects.*;
 
 public class GameHandler {
     private final GameService gameService;
+    private final Gson serializer = new Gson();
 
     public GameHandler(GameService gameService) {
         this.gameService = gameService;
@@ -19,27 +20,27 @@ public class GameHandler {
     public void listGames(Context ctx)
             throws UnauthorizedResponse {
         String authToken = ctx.header("Authorization");
-        ListGamesRequest listGamesRequest = new Gson().fromJson(ctx.body(), ListGamesRequest.class);
+        ListGamesRequest listGamesRequest = serializer.fromJson(ctx.body(), ListGamesRequest.class);
 
         ListGamesResult listGamesResult = gameService.listGames(listGamesRequest, authToken);
-        ctx.result(new Gson().toJson(listGamesResult));
+        ctx.result(serializer.toJson(listGamesResult));
         ctx.status(200);
     }
 
     public void createGame(Context ctx)
             throws UnauthorizedResponse, DataAccessException {
         String authToken = ctx.header("Authorization");
-        CreateGameRequest createGameRequest = new Gson().fromJson(ctx.body(), CreateGameRequest.class);
+        CreateGameRequest createGameRequest = serializer.fromJson(ctx.body(), CreateGameRequest.class);
 
         CreateGameResult createGameResult = gameService.createGame(createGameRequest, authToken);
-        ctx.result(new Gson().toJson(createGameResult));
+        ctx.result(serializer.toJson(createGameResult));
         ctx.status(200);
     }
 
     public void joinGame(Context ctx)
             throws UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, DataAccessException {
         String authToken = ctx.header("Authorization");
-        JoinGameRequest joinGameRequest = new Gson().fromJson(ctx.body(), JoinGameRequest.class);
+        JoinGameRequest joinGameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
 
         gameService.joinGame(joinGameRequest, authToken);
         ctx.status(200);

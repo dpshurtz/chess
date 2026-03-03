@@ -7,6 +7,8 @@ import io.javalin.http.*;
 import java.util.Map;
 
 public class ExceptionHandler {
+    private final Gson serializer = new Gson();
+
     public void httpExceptionHandler(HttpResponseException ex, Context ctx) {
         switch (ex) {
             case BadRequestResponse ignored     -> ctx.status(400).result("Error: bad request");
@@ -23,6 +25,6 @@ public class ExceptionHandler {
     }
 
     public String toJson(Exception ex) {
-        return new Gson().toJson(Map.of("message", ex.getMessage()));
+        return serializer.toJson(Map.of("message", ex.getMessage()));
     }
 }

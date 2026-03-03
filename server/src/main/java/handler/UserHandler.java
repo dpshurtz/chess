@@ -10,6 +10,7 @@ import serviceobjects.*;
 
 public class UserHandler {
     private final UserService userService;
+    private final Gson serializer = new Gson();
 
     public UserHandler(UserService userService) {
         this.userService = userService;
@@ -17,19 +18,19 @@ public class UserHandler {
 
     public void register(Context ctx)
             throws ForbiddenResponse, DataAccessException {
-        RegisterRequest registerRequest = new Gson().fromJson(ctx.body(), RegisterRequest.class);
+        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
 
         RegisterResult registerResult = userService.register(registerRequest);
-        ctx.result(new Gson().toJson(registerResult));
+        ctx.result(serializer.toJson(registerResult));
         ctx.status(200);
     }
 
     public void login(Context ctx)
             throws UnauthorizedResponse, DataAccessException {
-        LoginRequest loginRequest = new Gson().fromJson(ctx.body(), LoginRequest.class);
+        LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
 
         LoginResult loginResult = userService.login(loginRequest);
-        ctx.result(new Gson().toJson(loginResult));
+        ctx.result(serializer.toJson(loginResult));
         ctx.status(200);
     }
 
