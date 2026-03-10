@@ -7,6 +7,16 @@ import java.util.Collection;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO{
+
+    String[] createStatements = {
+            """
+            """
+    };
+
+    public SQLGameDAO() throws DataAccessException {
+        DatabaseManager.configureDatabase(createStatements);
+    }
+
     @Override
     public CreateGameResult createGame(String gameName) throws DataAccessException {
         return null;
