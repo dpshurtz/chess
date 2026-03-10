@@ -5,7 +5,7 @@ import model.UserData;
 public class SQLUserDAO implements UserDAO{
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        
+
     }
 
     @Override
