@@ -22,7 +22,7 @@ public class GameService {
     }
 
     public ListGamesResult listGames(ListGamesRequest listGamesRequest, String authToken)
-            throws UnauthorizedResponse {
+            throws UnauthorizedResponse, DataAccessException {
         if (authDAO.getAuth(authToken) == null) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
