@@ -10,6 +10,14 @@ public class SQLGameDAO implements GameDAO{
 
     String[] createStatements = {
             """
+            CREATE TABLE IF NOT EXISTS game (
+                `id` int NOT NULL AUTO_INCREMENT,
+                `whiteUsername` varchar(256) NOT NULL,
+                `blackUsername` varchar(256) NOT NULL,
+                `gameName` varchar(256) NOT NULL,
+                `game` varchar(1024) NOT NULL,
+                PRIMARY KEY (`id`)
+            )
             """
     };
 
