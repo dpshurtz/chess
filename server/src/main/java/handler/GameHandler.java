@@ -18,7 +18,7 @@ public class GameHandler {
     }
 
     public void listGames(Context ctx)
-            throws UnauthorizedResponse {
+            throws UnauthorizedResponse, DataAccessException {
         String authToken = ctx.header("Authorization");
         ListGamesRequest listGamesRequest = serializer.fromJson(ctx.body(), ListGamesRequest.class);
 

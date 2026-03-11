@@ -11,11 +11,11 @@ public class SQLUserDAO implements UserDAO{
     String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS user (
-                `id` int NOT NULL AUTO_INCREMENT,
+                `userID` int NOT NULL AUTO_INCREMENT,
                 `username` varchar(256) NOT NULL,
                 `password` varchar(256) NOT NULL,
                 `email` varchar(256) NOT NULL,
-                PRIMARY KEY (`id`),
+                PRIMARY KEY (`userID`),
                 INDEX(username)
             )
             """
