@@ -60,11 +60,10 @@ public class UserService {
         }
 
         UserData user = userDAO.getUser(loginRequest.username());
-        String hashedPassword = BCrypt.hashpw(loginRequest.password(), BCrypt.gensalt());
         if (user == null) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
-        else if (!BCrypt.checkpw(hashedPassword, user.password())) {
+        else if (!BCrypt.checkpw(loginRequest.password(), user.password())) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
 
