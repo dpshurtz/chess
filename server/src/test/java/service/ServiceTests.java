@@ -4,11 +4,14 @@ import dataaccess.*;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
+import model.GameData;
 import org.eclipse.jetty.security.LoggedOutAuthentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import serviceobjects.*;
+
+import java.util.ArrayList;
 
 class ServiceTests {
     private MemoryAuthDAO authDAO;
@@ -60,7 +63,17 @@ class ServiceTests {
 
         ListGamesResult listGamesResult = gameService.listGames(basicListGamesRequest, authToken);
 
-        Assertions.assertEquals(gameDAO.getGameTable(), listGamesResult.games(),
+        var listGameTable = new ArrayList<ListGameData>();
+        for (GameData game : gameDAO.getGameTable()) {
+            listGameTable.add(new ListGameData(
+                            game.gameID(),
+                            game.whiteUsername(),
+                            game.blackUsername(),
+                            game.gameName()
+                    )
+            );
+        }
+        Assertions.assertEquals(listGameTable, listGamesResult.games(),
                 "List does not match GameTable");
     }
 
