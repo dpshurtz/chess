@@ -19,31 +19,36 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
-        // Initialize DAOs
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+        try {
+            // Initialize DAOs
+            AuthDAO authDAO = new SQLAuthDAO();
+            GameDAO gameDAO = new SQLGameDAO();
+            UserDAO userDAO = new SQLUserDAO();
 
-        // Initialize Handlers
-        AdminHandler adminHandler = new AdminHandler(new AdminService(authDAO, gameDAO, userDAO));
-        GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
-        UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
-        ExceptionHandler exceptionHandler = new ExceptionHandler();
+            // Initialize Handlers
+            AdminHandler adminHandler = new AdminHandler(new AdminService(authDAO, gameDAO, userDAO));
+            GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
+            UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
+            ExceptionHandler exceptionHandler = new ExceptionHandler();
 
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+            javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
-        // Register endpoints
-        javalin.delete("/db", adminHandler::clear);
-        javalin.post("/user", userHandler::register);
-        javalin.post("/session", userHandler::login);
-        javalin.delete("/session", userHandler::logout);
-        javalin.get("/game", gameHandler::listGames);
-        javalin.post("/game", gameHandler::createGame);
-        javalin.put("/game", gameHandler::joinGame);
+            // Register endpoints
+            javalin.delete("/db", adminHandler::clear);
+            javalin.post("/user", userHandler::register);
+            javalin.post("/session", userHandler::login);
+            javalin.delete("/session", userHandler::logout);
+            javalin.get("/game", gameHandler::listGames);
+            javalin.post("/game", gameHandler::createGame);
+            javalin.put("/game", gameHandler::joinGame);
 
-        // Register exception handlers
-        javalin.exception(HttpResponseException.class, exceptionHandler::httpExceptionHandler);
-        javalin.exception(DataAccessException.class, exceptionHandler::dataExceptionHandler);
+            // Register exception handlers
+            javalin.exception(HttpResponseException.class, exceptionHandler::httpExceptionHandler);
+            javalin.exception(DataAccessException.class, exceptionHandler::dataExceptionHandler);
+        }
+        catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
