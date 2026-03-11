@@ -3,13 +3,15 @@ package dataaccess;
 import chess.ChessGame;
 import model.GameData;
 import serviceobjects.CreateGameResult;
+import serviceobjects.ListGameData;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO{
-    private Collection<GameData> gameTable = new HashSet<>();
+    private Collection<GameData> gameTable = new ArrayList<>();
     private int nextGameID = 1;
 
     @Override
@@ -37,8 +39,18 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public Collection<GameData> listGames() {
-        return gameTable;
+    public Collection<ListGameData> listGames() {
+        var result = new ArrayList<ListGameData>();
+        for (GameData game : gameTable) {
+            result.add(new ListGameData(
+                    game.gameID(),
+                    game.whiteUsername(),
+                    game.blackUsername(),
+                    game.gameName()
+                )
+            );
+        }
+        return result;
     }
 
     @Override

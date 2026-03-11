@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 import serviceobjects.CreateGameResult;
+import serviceobjects.ListGameData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -63,19 +64,18 @@ public class SQLGameDAO implements GameDAO{
     }
 
     @Override
-    public Collection<GameData> listGames() throws DataAccessException {
-        var result = new ArrayList<GameData>();
+    public Collection<ListGameData> listGames() throws DataAccessException {
+        var result = new ArrayList<ListGameData>();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game";
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        result.add(new GameData(
+                        result.add(new ListGameData(
                                 rs.getInt("gameID"),
                                 rs.getString("whiteUsername"),
                                 rs.getString("blackUsername"),
-                                rs.getString("gameName"),
-                                new Gson().fromJson(rs.getString("game"), ChessGame.class)
+                                rs.getString("gameName")
                                 )
                         );
                     }
