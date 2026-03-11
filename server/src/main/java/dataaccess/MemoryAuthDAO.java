@@ -12,7 +12,7 @@ public class MemoryAuthDAO implements AuthDAO{
     @Override
     public void createAuth(AuthData authData) throws DataAccessException {
         if (authTable.contains(authData)) {
-            throw new DataAccessException("AuthData already exists");
+            throw new DataAccessException("Error: AuthData already exists");
         }
         authTable.add(authData);
     }
@@ -35,7 +35,7 @@ public class MemoryAuthDAO implements AuthDAO{
                 return;
             }
         }
-        throw new DataAccessException("AuthToken not found");
+        throw new DataAccessException("Error: AuthToken not found");
     }
 
     @Override

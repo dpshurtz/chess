@@ -16,7 +16,7 @@ public class MemoryGameDAO implements GameDAO{
     public CreateGameResult createGame(String gameName) throws DataAccessException {
         for (GameData game : gameTable) {
             if (Objects.equals(gameName, game.gameName())) {
-                throw new DataAccessException("Game already exists");
+                throw new DataAccessException("Error: Game already exists");
             }
         }
         gameTable.add(new GameData(nextGameID, null, null, gameName, new ChessGame()));
@@ -44,7 +44,7 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public void updateGame(GameData newGameData) throws DataAccessException {
         if (!gameTable.remove(getGame(newGameData.gameID()))) {
-            throw new DataAccessException("Corresponding game not found");
+            throw new DataAccessException("Error: Corresponding game not found");
         }
         gameTable.add(newGameData);
     }

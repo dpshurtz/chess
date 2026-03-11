@@ -2,17 +2,14 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import model.AuthData;
 import model.GameData;
 import serviceobjects.CreateGameResult;
-import serviceobjects.RegisterRequest;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class SQLGameDAO implements GameDAO{
 
@@ -60,7 +57,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), e);
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()), e);
         }
         return null;
     }
@@ -72,7 +69,7 @@ public class SQLGameDAO implements GameDAO{
             var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
+                    while (rs.next()) {
                         result.add(new GameData(
                                 rs.getInt("gameID"),
                                 rs.getString("whiteUsername"),
@@ -85,7 +82,7 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), e);
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()), e);
         }
         return result;
 
