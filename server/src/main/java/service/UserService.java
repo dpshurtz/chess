@@ -8,6 +8,7 @@ import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import serviceobjects.*;
 
 import java.util.Objects;
@@ -36,9 +37,11 @@ public class UserService {
         if (user != null) {
             throw new ForbiddenResponse("Error: already taken");
         }
+
+        String hashedPassword = BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt());
         userDAO.createUser(new UserData(
                 registerRequest.username(),
-                registerRequest.password(),
+                hashedPassword,
                 registerRequest.email()));
 
         String authToken = generateToken();
@@ -57,10 +60,11 @@ public class UserService {
         }
 
         UserData user = userDAO.getUser(loginRequest.username());
+        String hashedPassword = BCrypt.hashpw(loginRequest.password(), BCrypt.gensalt());
         if (user == null) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
-        else if (!Objects.equals(user.password(), loginRequest.password())) {
+        else if (!BCrypt.checkpw(hashedPassword, user.password())) {
             throw new UnauthorizedResponse("Error: unauthorized");
         }
 
