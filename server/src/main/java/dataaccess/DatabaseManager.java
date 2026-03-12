@@ -103,8 +103,7 @@ public class DatabaseManager {
                         case Integer p -> ps.setInt(i + 1, p);
                         case ChessGame p -> ps.setString(i + 1, new Gson().toJson(p));
                         case null -> ps.setNull(i + 1, NULL);
-                        default -> {
-                        }
+                        default -> throw new IllegalStateException("Error: Unexpected value: " + param);
                     }
                 }
                 ps.executeUpdate();
