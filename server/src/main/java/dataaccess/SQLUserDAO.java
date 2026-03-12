@@ -1,10 +1,15 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
+import model.GameData;
 import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class SQLUserDAO implements UserDAO{
 
@@ -57,5 +62,27 @@ public class SQLUserDAO implements UserDAO{
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE user";
         DatabaseManager.executeUpdate(statement);
+    }
+
+    public Collection<UserData> getUserTable() throws DataAccessException {
+        var result = new ArrayList<UserData>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(new UserData(
+                                        rs.getString("username"),
+                                        rs.getString("password"),
+                                        rs.getString("email")
+                                )
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()), e);
+        }
+        return result;
     }
 }

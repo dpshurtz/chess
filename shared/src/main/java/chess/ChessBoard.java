@@ -199,8 +199,8 @@ public class ChessBoard {
      * movement lines available at that location. If there is no piece at a location,
      * that collection is empty in the map.
      */
-    public HashMap<ChessPosition, Collection<MovementLine>> getMovementLines() {
-        HashMap<ChessPosition, Collection<MovementLine>> movementLines = new HashMap<>();
+    public HashMap<ChessPosition, HashSet<MovementLine>> getMovementLines() {
+        HashMap<ChessPosition, HashSet<MovementLine>> movementLines = new HashMap<>();
         ChessPiece piece;
 
         for (ChessPosition position : positions){

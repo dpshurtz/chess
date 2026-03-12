@@ -16,7 +16,7 @@ public class MovementLine {
     private final boolean isPawn;
     private final ChessGame.TeamColor team;
     private final ChessBoard board;
-    private Collection<ChessPosition> attackedPositions;
+    private HashSet<ChessPosition> attackedPositions;
 
     // Constructor for lines along which an attack may be valid
     public MovementLine(ChessPosition origin, Direction direction, int range, 
@@ -86,7 +86,7 @@ public class MovementLine {
     /**
      * @return A set of all positions attacked by this movement line
      */
-    public Collection<ChessPosition> getAttackedPositions() {
+    public HashSet<ChessPosition> getAttackedPositions() {
         return attackedPositions;
     }
 

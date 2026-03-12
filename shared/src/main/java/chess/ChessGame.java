@@ -17,19 +17,19 @@ public class ChessGame {
     private TeamColor teamTurn = TeamColor.WHITE;
 
     // Maps to track which squares are attacked along which lines
-    private HashMap<ChessPosition, Collection<MovementLine>> movementLinesByOrigin;
-    private final HashMap<ChessPosition, Collection<MovementLine>> underAttackByWhite = new HashMap<>();
-    private final HashMap<ChessPosition, Collection<MovementLine>> underAttackByBlack = new HashMap<>();
+    private transient HashMap<ChessPosition, HashSet<MovementLine>> movementLinesByOrigin;
+    private transient final HashMap<ChessPosition, HashSet<MovementLine>> underAttackByWhite = new HashMap<>();
+    private transient final HashMap<ChessPosition, HashSet<MovementLine>> underAttackByBlack = new HashMap<>();
 
     // Store precalculated valid moves
-    private final HashMap<ChessPosition, Collection<ChessMove>> validMovesFrom = new HashMap<>();
+    private transient final HashMap<ChessPosition, HashSet<ChessMove>> validMovesFrom = new HashMap<>();
 
     // Track king positions to determine check
-    private ChessPosition kingPosWhite;
-    private ChessPosition kingPosBlack;
+    private transient ChessPosition kingPosWhite;
+    private transient ChessPosition kingPosBlack;
 
     // Indicates validity of special moves
-    private final SpecialMoveValidator validator = new SpecialMoveValidator();
+    private transient final SpecialMoveValidator validator = new SpecialMoveValidator();
 
     public ChessGame() {
         board.resetBoard();
@@ -225,7 +225,7 @@ public class ChessGame {
      *
      * @param team the attacking team
      */
-    private HashMap<ChessPosition, Collection<MovementLine>> underAttackByTeam(TeamColor team) {
+    private HashMap<ChessPosition, HashSet<MovementLine>> underAttackByTeam(TeamColor team) {
         if (team == TeamColor.WHITE) {
             return underAttackByWhite;
         }
@@ -312,7 +312,7 @@ public class ChessGame {
      * @return A collection of all moves a piece can make
      * or null if there is no piece at the given location
      */
-    private Collection<ChessMove> validMovesPrecalculate(ChessPosition startPosition) {
+    private HashSet<ChessMove> validMovesPrecalculate(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
             return null;
@@ -348,7 +348,7 @@ public class ChessGame {
                 }
             }
         }
-        return moves;
+        return (HashSet<ChessMove>) moves;
     }
 
     @Override

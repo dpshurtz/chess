@@ -2,12 +2,13 @@ package dataaccess;
 
 import model.UserData;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
 public class MemoryUserDAO implements UserDAO{
-    private Collection<UserData> userTable = new HashSet<>();
+    private Collection<UserData> userTable = new ArrayList<>();
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
@@ -29,7 +30,7 @@ public class MemoryUserDAO implements UserDAO{
 
     @Override
     public void clear() {
-        userTable = new HashSet<>();
+        userTable = new ArrayList<>();
     }
 
     public Collection<UserData> getUserTable() {

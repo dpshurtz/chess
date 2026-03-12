@@ -2,12 +2,13 @@ package dataaccess;
 
 import model.AuthData;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO{
-    private Collection<AuthData> authTable = new HashSet<>();
+    private Collection<AuthData> authTable = new ArrayList<>();
 
     @Override
     public void createAuth(AuthData authData) throws DataAccessException {
@@ -40,7 +41,7 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public void clear() {
-        authTable = new HashSet<>();
+        authTable = new ArrayList<>();
     }
 
     public Collection<AuthData> getAuthTable() {

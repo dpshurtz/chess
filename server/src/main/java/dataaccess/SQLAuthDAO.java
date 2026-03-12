@@ -1,10 +1,13 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class SQLAuthDAO implements AuthDAO{
 
@@ -61,5 +64,26 @@ public class SQLAuthDAO implements AuthDAO{
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE auth";
         DatabaseManager.executeUpdate(statement);
+    }
+
+    public Collection<AuthData> getAuthTable() throws DataAccessException {
+        var result = new ArrayList<AuthData>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM auth";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(new AuthData(
+                                        rs.getString("authToken"),
+                                        rs.getString("username")
+                                )
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()), e);
+        }
+        return result;
     }
 }

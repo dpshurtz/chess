@@ -34,8 +34,8 @@ public class SQLGameDAO implements GameDAO{
 
     @Override
     public CreateGameResult createGame(String gameName) throws DataAccessException {
-        var statement = "INSERT INTO game (gameName) VALUES (?)";
-        int gameID = DatabaseManager.executeUpdate(statement, gameName);
+        var statement = "INSERT INTO game (gameName, game) VALUES (?, ?)";
+        int gameID = DatabaseManager.executeUpdate(statement, gameName, new ChessGame());
         return new CreateGameResult(gameID);
     }
 
@@ -109,5 +109,29 @@ public class SQLGameDAO implements GameDAO{
     public void clear() throws DataAccessException {
         var statement = "TRUNCATE game";
         DatabaseManager.executeUpdate(statement);
+    }
+
+    public Collection<GameData> getGameTable() throws DataAccessException {
+        var result = new ArrayList<GameData>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(new GameData(
+                                        rs.getInt("gameID"),
+                                        rs.getString("whiteUsername"),
+                                        rs.getString("blackUsername"),
+                                        rs.getString("gameName"),
+                                        new Gson().fromJson(rs.getString("game"), ChessGame.class)
+                                )
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()), e);
+        }
+        return result;
     }
 }

@@ -63,7 +63,7 @@ public class MemoryGameDAO implements GameDAO{
 
     @Override
     public void clear() {
-        gameTable = new HashSet<>();
+        gameTable = new ArrayList<>();
     }
 
     public Collection<GameData> getGameTable() {
