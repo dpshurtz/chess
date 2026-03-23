@@ -9,7 +9,7 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 /**
- * 
+ *
  */
 public class DatabaseManager {
     private static String databaseName;
