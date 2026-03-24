@@ -22,6 +22,26 @@ public class ChessClient {
     public void run() {
         Scanner scanner = new Scanner(System.in);
 
+        while (isActive) {
+            executeMenuOptions(preLoginOptions, scanner);
+
+            while (isLoggedIn) {
+                executeMenuOptions(postLoginOptions, scanner);
+            }
+        }
+    }
+
+    private void executeMenuOptions(ArrayList<UIOption> options, Scanner scanner) {
+        int optionIndex = getMenuInput(options, scanner);
+        options.get(optionIndex).action();
+    }
+
+    private int getMenuInput(ArrayList<UIOption> options, Scanner scanner) {
+        for (int i = 0; i < options.size(); i++) {
+            System.out.println(i + " - " + options.get(i).name());
+        }
+        String line = scanner.nextLine();
+        return Character.getNumericValue(line.charAt(0));
     }
 
     private void generatePreLoginOptions() {
