@@ -11,10 +11,14 @@ import java.net.http.HttpResponse;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
-    private final int port;
+    private final String serverUrl;
+
+    public ServerFacade(String url) {
+        serverUrl = url;
+    }
 
     public ServerFacade(int port) {
-        this.port = port;
+        serverUrl = "http://localhost" + port;
     }
 
     public void clear()
@@ -68,7 +72,7 @@ public class ServerFacade {
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + path))
+                .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
@@ -78,7 +82,7 @@ public class ServerFacade {
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + path))
+                .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body))
                 .header("Authorization", authToken);
         if (body != null) {
