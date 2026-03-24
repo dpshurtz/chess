@@ -1,4 +1,4 @@
-package server;
+package client;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
@@ -11,10 +11,10 @@ import java.net.http.HttpResponse;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
-    private final String serverUrl;
+    private final int port;
 
-    public ServerFacade(String url) {
-        serverUrl = url;
+    public ServerFacade(int port) {
+        this.port = port;
     }
 
     public void clear()
@@ -68,7 +68,7 @@ public class ServerFacade {
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + path))
+                .uri(URI.create("http://localhost:" + port + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
@@ -78,7 +78,7 @@ public class ServerFacade {
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + path))
+                .uri(URI.create("http://localhost:" + port + path))
                 .method(method, makeRequestBody(body))
                 .header("Authorization", authToken);
         if (body != null) {
