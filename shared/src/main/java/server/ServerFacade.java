@@ -40,28 +40,28 @@ public class ServerFacade {
 
     public void logout(LogoutRequest logoutRequest, String authToken)
             throws ResponseException {
-        var request = buildRequest("DELETE", "/session", logoutRequest);
+        var request = buildRequest("DELETE", "/session", logoutRequest, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
     public ListGamesResult listGames(ListGamesRequest listGamesRequest, String authToken)
             throws ResponseException {
-        var request = buildRequest("GET", "/game", listGamesRequest);
+        var request = buildRequest("GET", "/game", listGamesRequest, authToken);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResult.class);
     }
 
     public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken)
             throws ResponseException {
-        var request = buildRequest("POST", "/game", createGameRequest);
+        var request = buildRequest("POST", "/game", createGameRequest, authToken);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResult.class);
     }
 
     public void joinGame(JoinGameRequest joinGameRequest, String authToken)
             throws ResponseException {
-        var request = buildRequest("PUT", "/game", joinGameRequest);
+        var request = buildRequest("PUT", "/game", joinGameRequest, authToken);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
@@ -70,6 +70,17 @@ public class ServerFacade {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
+        if (body != null) {
+            request.setHeader("Content-Type", "application/json");
+        }
+        return request.build();
+    }
+
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
+        var request = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + path))
+                .method(method, makeRequestBody(body))
+                .header("Authorization", authToken);
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
         }
