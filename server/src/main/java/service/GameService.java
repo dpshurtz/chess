@@ -8,7 +8,6 @@ import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 import model.AuthData;
 import model.GameData;
-import serviceobjects.*;
 
 import java.util.Objects;
 

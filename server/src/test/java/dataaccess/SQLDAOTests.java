@@ -1,18 +1,12 @@
 package dataaccess;
 
 import chess.ChessGame;
-import io.javalin.http.UnauthorizedResponse;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import serviceobjects.CreateGameResult;
-import serviceobjects.ListGameData;
-
-import java.util.Collection;
 
 public class SQLDAOTests {
 

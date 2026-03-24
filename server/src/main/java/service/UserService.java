@@ -9,9 +9,7 @@ import io.javalin.http.UnauthorizedResponse;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
-import serviceobjects.*;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {

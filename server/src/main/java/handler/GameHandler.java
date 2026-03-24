@@ -7,7 +7,6 @@ import io.javalin.http.Context;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 import service.GameService;
-import serviceobjects.*;
 
 public class GameHandler {
     private final GameService gameService;

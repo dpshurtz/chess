@@ -5,11 +5,9 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 import model.GameData;
-import org.eclipse.jetty.security.LoggedOutAuthentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import serviceobjects.*;
 
 import java.util.ArrayList;
 

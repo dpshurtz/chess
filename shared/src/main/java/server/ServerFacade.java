@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import serviceobjects.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,42 +17,46 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    javalin.delete("/db", adminHandler::clear);
-            javalin.post("/user", userHandler::register);
-            javalin.post("/session", userHandler::login);
-            javalin.delete("/session", userHandler::logout);
-            javalin.get("/game", gameHandler::listGames);
-            javalin.post("/game", gameHandler::createGame);
-            javalin.put("/game", gameHandler::joinGame);
-
     public void clear() throws ResponseException {
         var request = buildRequest("DELETE", "/db", null);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public Pet addPet(Pet pet) throws ResponseException {
-        var request = buildRequest("POST", "/pet", pet);
+    public RegisterResult register(RegisterRequest registerRequest) throws ResponseException {
+        var request = buildRequest("POST", "/user", registerRequest);
         var response = sendRequest(request);
-        return handleResponse(response, Pet.class);
+        return handleResponse(response, RegisterResult.class);
     }
 
-    public void deletePet(int id) throws ResponseException {
-        var path = String.format("/pet/%s", id);
-        var request = buildRequest("DELETE", path, null);
+    public LoginResult login(LoginRequest loginRequest) throws ResponseException {
+        var request = buildRequest("POST", "/session", loginRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, LoginResult.class);
+    }
+
+    public void logout(LogoutRequest logoutRequest) throws ResponseException {
+        var request = buildRequest("DELETE", "/session", logoutRequest);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public void deleteAllPets() throws ResponseException {
-        var request = buildRequest("DELETE", "/pet", null);
-        sendRequest(request);
+    public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws ResponseException {
+        var request = buildRequest("GET", "/game", listGamesRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, ListGamesResult.class);
     }
 
-    public PetList listPets() throws ResponseException {
-        var request = buildRequest("GET", "/pet", null);
+    public CreateGameResult createGame(CreateGameRequest createGameRequest) throws ResponseException {
+        var request = buildRequest("POST", "/game", createGameRequest);
         var response = sendRequest(request);
-        return handleResponse(response, PetList.class);
+        return handleResponse(response, CreateGameResult.class);
+    }
+
+    public void joinGame(JoinGameRequest joinGameRequest) throws ResponseException {
+        var request = buildRequest("PUT", "/game", joinGameRequest);
+        var response = sendRequest(request);
+        handleResponse(response, null);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
