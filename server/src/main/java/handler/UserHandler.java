@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 import service.UserService;
+import serviceobjects.*;
 
 public class UserHandler {
     private final UserService userService;

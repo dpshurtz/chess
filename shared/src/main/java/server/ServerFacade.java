@@ -17,43 +17,50 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public void clear() throws ResponseException {
+    public void clear()
+            throws ResponseException {
         var request = buildRequest("DELETE", "/db", null);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws ResponseException {
+    public RegisterResult register(RegisterRequest registerRequest)
+            throws ResponseException {
         var request = buildRequest("POST", "/user", registerRequest);
         var response = sendRequest(request);
         return handleResponse(response, RegisterResult.class);
     }
 
-    public LoginResult login(LoginRequest loginRequest) throws ResponseException {
+    public LoginResult login(LoginRequest loginRequest)
+            throws ResponseException {
         var request = buildRequest("POST", "/session", loginRequest);
         var response = sendRequest(request);
         return handleResponse(response, LoginResult.class);
     }
 
-    public void logout(LogoutRequest logoutRequest) throws ResponseException {
+    public void logout(LogoutRequest logoutRequest, String authToken)
+            throws ResponseException {
         var request = buildRequest("DELETE", "/session", logoutRequest);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws ResponseException {
+    public ListGamesResult listGames(ListGamesRequest listGamesRequest, String authToken)
+            throws ResponseException {
         var request = buildRequest("GET", "/game", listGamesRequest);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResult.class);
     }
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest) throws ResponseException {
+    public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken)
+            throws ResponseException {
         var request = buildRequest("POST", "/game", createGameRequest);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResult.class);
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws ResponseException {
+    public void joinGame(JoinGameRequest joinGameRequest, String authToken)
+            throws ResponseException {
         var request = buildRequest("PUT", "/game", joinGameRequest);
         var response = sendRequest(request);
         handleResponse(response, null);
