@@ -17,6 +17,8 @@ public class ChessClient {
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
+        generatePreLoginOptions();
+        generatePostLoginOptions();
     }
 
     public void run() {
@@ -33,7 +35,7 @@ public class ChessClient {
 
     private void executeMenuOptions(ArrayList<UIOption> options, Scanner scanner) {
         int optionIndex = getMenuInput(options, scanner);
-        options.get(optionIndex).action();
+        options.get(optionIndex).action().run();
     }
 
     private int getMenuInput(ArrayList<UIOption> options, Scanner scanner) {
@@ -71,11 +73,13 @@ public class ChessClient {
     }
 
     private void quit(){
-
+        isActive = false;
     }
 
     private void helpPreLogin(){
-
+        for (UIOption options : preLoginOptions) {
+            System.out.println(options.name() + " - " + options.description());
+        }
     }
 
     private void playGame(){
@@ -99,7 +103,8 @@ public class ChessClient {
     }
 
     private void helpPostLogin(){
-
+        for (UIOption options : postLoginOptions) {
+            System.out.println(options.name() + " - " + options.description());
+        }
     }
-
 }
