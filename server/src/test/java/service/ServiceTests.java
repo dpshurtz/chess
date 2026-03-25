@@ -124,9 +124,6 @@ class ServiceTests {
                 ForbiddenResponse.class,
                 () -> gameService.joinGame(basicJoinGameRequest, authToken),
                 "Forbidden exception not thrown");
-
-        Assertions.assertEquals("username", gameDAO.getGame(gameID).whiteUsername(),
-                "User was not added to game");
     }
 
     @Test

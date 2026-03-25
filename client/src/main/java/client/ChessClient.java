@@ -57,7 +57,13 @@ public class ChessClient {
         System.out.println();
         int optionIndex = getMenuInput(options);
         System.out.println();
-        options.get(optionIndex).action().run();
+
+        if (0 <= optionIndex && optionIndex < options.size()) {
+            options.get(optionIndex).action().run();
+        }
+        else {
+            System.out.println("invalid");
+        }
     }
 
     private int getMenuInput(ArrayList<UIOption> options) {
@@ -65,7 +71,12 @@ public class ChessClient {
             System.out.println(i + " - " + options.get(i).name());
         }
         String line = scanner.nextLine();
-        return Character.getNumericValue(line.charAt(0));
+        if (line.isBlank()) {
+            return -1;
+        }
+        else {
+            return Character.getNumericValue(line.charAt(0));
+        }
     }
 
     private void generatePreLoginOptions() {
@@ -144,22 +155,47 @@ public class ChessClient {
 
     private void playGame(){
         System.out.print("game number >> ");
-        int gameIndex = Character.getNumericValue(scanner.nextLine().charAt(0));
+        String line = scanner.nextLine();
+        if (line.isBlank()) {
+            System.out.println("invalid");
+            return;
+        }
+
+        int gameIndex = Character.getNumericValue(line.charAt(0)) - 1;
+        if (availableGames == null || 0 > gameIndex || gameIndex >= availableGames.size()) {
+            System.out.println("invalid");
+            return;
+        }
+
         int gameID = availableGames.get(gameIndex).gameID();
+
         System.out.print("join as white (w) or black (b) >> ");
-        char team = scanner.nextLine().charAt(0);
+        line = scanner.nextLine();
+        if (line.isBlank()) {
+            System.out.println("invalid");
+            return;
+        }
+
+        char team = line.charAt(0);
 
         JoinGameRequest request;
+        ChessGame.TeamColor teamColor;
         if (team == 'w') {
+            teamColor = ChessGame.TeamColor.WHITE;
             request = new JoinGameRequest("WHITE", gameID);
         }
-        else {
+        else if (team == 'b') {
+            teamColor = ChessGame.TeamColor.BLACK;
             request = new JoinGameRequest("BLACK", gameID);
+        }
+        else {
+            System.out.println("invalid");
+            return;
         }
 
         try {
             server.joinGame(request, authToken);
-            displayGame(gameID);
+            displayGame(gameID, teamColor);
             state = ClientState.IN_GAME;
         }
         catch (ResponseException e) {
@@ -187,8 +223,8 @@ public class ChessClient {
         try {
             result = server.listGames(new ListGamesRequest(), authToken);
             availableGames = (ArrayList<ListGameData>) result.games();
-            for (int i = 0; i < result.games().size(); i++) {
-                ListGameData game = availableGames.get(i);
+            for (int i = 1; i <= result.games().size(); i++) {
+                ListGameData game = availableGames.get(i - 1);
                 System.out.println(i + " - " + game.gameName());
                 System.out.println("\twhite: " + game.whiteUsername());
                 System.out.println("\tblack: " + game.blackUsername());
@@ -203,10 +239,20 @@ public class ChessClient {
     private void observeGame(){
         System.out.print("game number >> ");
         String line = scanner.nextLine();
-        int gameIndex = Character.getNumericValue(line.charAt(0));
+        if (line.isBlank()) {
+            System.out.println("invalid");
+            return;
+        }
+
+        int gameIndex = Character.getNumericValue(line.charAt(0)) - 1;
+        if (availableGames == null || 0 > gameIndex || gameIndex >= availableGames.size()) {
+            System.out.println("invalid");
+            return;
+        }
+
         int gameID = availableGames.get(gameIndex).gameID();
 
-        displayGame(gameID);
+        displayGame(gameID, ChessGame.TeamColor.WHITE);
         state = ClientState.IN_GAME;
     }
 
@@ -234,12 +280,22 @@ public class ChessClient {
         state = ClientState.LOGGED_IN;
     }
 
-    private void displayGame(int gameID) {
+    private void displayGame(int gameID, ChessGame.TeamColor team) {
         ChessBoard board = new ChessBoard();
         board.resetBoard();
 
-        for (int row = 8; row >= 1; row--) {
-            for (int col = 1; col <= 8; col++) {
+        int[] rows, cols;
+        if (team == ChessGame.TeamColor.WHITE) {
+            rows = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
+            cols = new int[]{1, 2, 3, 4, 5, 6, 7, 8};
+        }
+        else {
+            rows = new int[]{1, 2, 3, 4, 5, 6, 7, 8};
+            cols = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
+        }
+
+        for (int row : rows) {
+            for (int col : cols) {
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
 
                 if ((row + col)%2 == 1) {

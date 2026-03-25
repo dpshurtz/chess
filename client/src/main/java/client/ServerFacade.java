@@ -18,7 +18,7 @@ public class ServerFacade {
     }
 
     public ServerFacade(int port) {
-        serverUrl = "http://localhost" + port;
+        serverUrl = "http://localhost:" + port;
     }
 
     public void clear()
