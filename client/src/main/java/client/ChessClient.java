@@ -81,25 +81,58 @@ public class ChessClient {
 
     private void generatePreLoginOptions() {
         preLoginOptions = new ArrayList<>();
-        preLoginOptions.add(new UIOption("login", "description", this::login));
-        preLoginOptions.add(new UIOption("register", "description", this::register));
-        preLoginOptions.add(new UIOption("quit", "description", this::quit));
-        preLoginOptions.add(new UIOption("help", "description", this::helpPreLogin));
+        preLoginOptions.add(new UIOption(
+                "login",
+                "Logs you into the server",
+                this::login));
+        preLoginOptions.add(new UIOption(
+                "register",
+                "Creates you an account on the server",
+                this::register));
+        preLoginOptions.add(new UIOption(
+                "quit",
+                "Leaves this application",
+                this::quit));
+        preLoginOptions.add(new UIOption(
+                "help",
+                "Displays this information",
+                this::helpPreLogin));
     }
 
     private void generatePostLoginOptions() {
         postLoginOptions = new ArrayList<>();
-        postLoginOptions.add(new UIOption("play game", "description", this::playGame));
-        postLoginOptions.add(new UIOption("create game", "description", this::createGame));
-        postLoginOptions.add(new UIOption("list games", "description", this::listGames));
-        postLoginOptions.add(new UIOption("observe game", "description", this::observeGame));
-        postLoginOptions.add(new UIOption("logout", "description", this::logout));
-        postLoginOptions.add(new UIOption("help", "description", this::helpPostLogin));
+        postLoginOptions.add(new UIOption(
+                "play game",
+                "Lets you join a game that was listed",
+                this::playGame));
+        postLoginOptions.add(new UIOption(
+                "create game",
+                "Creates an empty game with no players",
+                this::createGame));
+        postLoginOptions.add(new UIOption(
+                "list games",
+                "Lists all current games",
+                this::listGames));
+        postLoginOptions.add(new UIOption(
+                "observe game",
+                "Lets you watch a game without joining",
+                this::observeGame));
+        postLoginOptions.add(new UIOption(
+                "logout",
+                "Returns to the login menu",
+                this::logout));
+        postLoginOptions.add(new UIOption(
+                "help",
+                "Displays this information",
+                this::helpPostLogin));
     }
 
     private void generateInGameOptions() {
         inGameOptions = new ArrayList<>();
-        inGameOptions.add(new UIOption("leave game", "description", this::leaveGame));
+        inGameOptions.add(new UIOption(
+                "leave game",
+                "Returns to the main menu",
+                this::leaveGame));
     }
 
     private void login(){
