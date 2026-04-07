@@ -130,9 +130,29 @@ public class ChessClient {
     private void generateInGameOptions() {
         inGameOptions = new ArrayList<>();
         inGameOptions.add(new UIOption(
+                "redraw chessboard",
+                "Displays the chessboard on the screen",
+                this::redrawChessboard));
+        inGameOptions.add(new UIOption(
+                "make move",
+                "Allows you to move a piece on your turn",
+                this::makeMove));
+        inGameOptions.add(new UIOption(
+                "resign",
+                "Forfeits the game to the opponent",
+                this::resign));
+        inGameOptions.add(new UIOption(
+                "highlight legal moves",
+                "Displays the board with legal moves from a specified location highlighted",
+                this::highlightLegalMoves));
+        inGameOptions.add(new UIOption(
                 "leave game",
                 "Returns to the main menu",
                 this::leaveGame));
+        inGameOptions.add(new UIOption(
+                "help",
+                "Displays this information",
+                this::helpInGame));
     }
 
     private void login(){
@@ -308,9 +328,29 @@ public class ChessClient {
         }
     }
 
+    private void redrawChessboard() {
+
+    }
+
+    private void makeMove() {
+
+    }
+
+    private void resign() {
+
+    }
+
+    private void highlightLegalMoves() {
+
+    }
+
     private void leaveGame() {
         System.out.println("leaving game");
         state = ClientState.LOGGED_IN;
+    }
+
+    private void helpInGame() {
+
     }
 
     private void displayGame(int gameID, ChessGame.TeamColor team) {
