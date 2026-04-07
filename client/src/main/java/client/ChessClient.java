@@ -350,7 +350,9 @@ public class ChessClient {
     }
 
     private void helpInGame() {
-
+        for (UIOption options : inGameOptions) {
+            System.out.println(options.name() + " - " + options.description());
+        }
     }
 
     private void displayGame(int gameID, ChessGame.TeamColor team) {
