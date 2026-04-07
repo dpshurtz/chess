@@ -11,6 +11,7 @@ import ui.UIOption;
 import client.ChessClient.ClientState;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ChessClient {
@@ -21,6 +22,9 @@ public class ChessClient {
     ClientState state;
     String authToken = null;
     ArrayList<ListGameData> availableGames;
+
+    int currentGameID;
+    ChessGame.TeamColor currentTeam;
 
     ArrayList<UIOption> preLoginOptions;
     ArrayList<UIOption> postLoginOptions;
@@ -220,7 +224,7 @@ public class ChessClient {
             return;
         }
 
-        int gameID = availableGames.get(gameIndex).gameID();
+        currentGameID = availableGames.get(gameIndex).gameID();
 
         System.out.print("join as white (w) or black (b) >> ");
         line = scanner.nextLine();
@@ -232,14 +236,13 @@ public class ChessClient {
         char team = line.charAt(0);
 
         JoinGameRequest request;
-        ChessGame.TeamColor teamColor;
         if (team == 'w') {
-            teamColor = ChessGame.TeamColor.WHITE;
-            request = new JoinGameRequest("WHITE", gameID);
+            currentTeam = ChessGame.TeamColor.WHITE;
+            request = new JoinGameRequest("WHITE", currentGameID);
         }
         else if (team == 'b') {
-            teamColor = ChessGame.TeamColor.BLACK;
-            request = new JoinGameRequest("BLACK", gameID);
+            currentTeam = ChessGame.TeamColor.BLACK;
+            request = new JoinGameRequest("BLACK", currentGameID);
         }
         else {
             System.out.println("invalid");
@@ -248,7 +251,7 @@ public class ChessClient {
 
         try {
             server.joinGame(request, authToken);
-            displayGame(gameID, teamColor);
+            displayGame(currentGameID, currentTeam);
             state = ClientState.IN_GAME;
         }
         catch (ResponseException e) {
@@ -303,9 +306,10 @@ public class ChessClient {
             return;
         }
 
-        int gameID = availableGames.get(gameIndex).gameID();
+        currentGameID = availableGames.get(gameIndex).gameID();
+        currentTeam = null;
 
-        displayGame(gameID, ChessGame.TeamColor.WHITE);
+        displayGame(currentGameID, ChessGame.TeamColor.WHITE);
         state = ClientState.IN_GAME;
     }
 
@@ -329,7 +333,7 @@ public class ChessClient {
     }
 
     private void redrawChessboard() {
-
+        displayGame(currentGameID, Objects.requireNonNullElse(currentTeam, ChessGame.TeamColor.WHITE));
     }
 
     private void makeMove() {
