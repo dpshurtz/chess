@@ -5,7 +5,6 @@ import exception.ResponseException;
 import serviceobjects.*;
 import ui.EscapeSequences;
 import ui.UIOption;
-import client.ChessClient.ClientState;
 import websocket.NotificationHandler;
 import websocket.WebSocketFacade;
 import websocket.commands.UserGameCommand;
@@ -43,7 +42,7 @@ public class ChessClient implements NotificationHandler {
 
     @Override
     public void notify(NotificationMessage notification) {
-
+        System.out.println(notification.getMessage());
     }
 
     public enum ClientState {
