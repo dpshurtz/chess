@@ -1,41 +1,49 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import exception.ResponseException;
 import serviceobjects.*;
 import ui.EscapeSequences;
 import ui.UIOption;
 import client.ChessClient.ClientState;
+import websocket.NotificationHandler;
+import websocket.WebSocketFacade;
+import websocket.commands.UserGameCommand;
+import websocket.messages.NotificationMessage;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
 
-    ServerFacade server;
-    Scanner scanner;
+    private final ServerFacade server;
+    private final WebSocketFacade ws;
+    private final Scanner scanner;
 
-    ClientState state;
-    String authToken = null;
-    ArrayList<ListGameData> availableGames;
+    private ClientState state;
+    private String authToken = null;
+    private ArrayList<ListGameData> availableGames;
 
-    int currentGameID;
-    ChessGame.TeamColor currentTeam;
+    private int currentGameID;
+    private ChessGame.TeamColor currentTeam;
 
-    ArrayList<UIOption> preLoginOptions;
-    ArrayList<UIOption> postLoginOptions;
-    ArrayList<UIOption> inGameOptions;
+    private ArrayList<UIOption> preLoginOptions;
+    private ArrayList<UIOption> postLoginOptions;
+    private ArrayList<UIOption> inGameOptions;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        ws = new WebSocketFacade(serverUrl, this);
         scanner = new Scanner(System.in);
         generatePreLoginOptions();
         generatePostLoginOptions();
         generateInGameOptions();
+    }
+
+    @Override
+    public void notify(NotificationMessage notification) {
+
     }
 
     public enum ClientState {
@@ -251,6 +259,8 @@ public class ChessClient {
 
         try {
             server.joinGame(request, authToken);
+            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID);
+
             displayGame(currentGameID, currentTeam);
             state = ClientState.IN_GAME;
         }
@@ -309,6 +319,12 @@ public class ChessClient {
         currentGameID = availableGames.get(gameIndex).gameID();
         currentTeam = null;
 
+        try {
+            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+
         displayGame(currentGameID, ChessGame.TeamColor.WHITE);
         state = ClientState.IN_GAME;
     }
@@ -337,11 +353,34 @@ public class ChessClient {
     }
 
     private void makeMove() {
+        System.out.print("starting square >> ");
+        ChessPosition startPosition = getPositionInput();
+        if (startPosition == null) {
+            System.out.println("invalid");
+            return;
+        }
 
+        System.out.print("starting square >> ");
+        ChessPosition endPosition = getPositionInput();
+        if (endPosition == null) {
+            System.out.println("invalid");
+            return;
+        }
+
+        try {
+            ws.makeMove(authToken, currentGameID, new ChessMove(startPosition, endPosition, null));
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void resign() {
-
+        System.out.println("resigning");
+        try {
+            ws.sendCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void highlightLegalMoves() {
@@ -350,6 +389,11 @@ public class ChessClient {
 
     private void leaveGame() {
         System.out.println("leaving game");
+        try {
+            ws.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
         state = ClientState.LOGGED_IN;
     }
 
@@ -423,5 +467,20 @@ public class ChessClient {
             pieceString = EscapeSequences.SET_TEXT_COLOR_BLACK + pieceString;
         }
         return pieceString;
+    }
+
+    private ChessPosition getPositionInput() {
+        String line = scanner.nextLine();
+        if (line.isBlank()) {
+            return null;
+        }
+
+        int col = Character.toLowerCase(line.charAt(0)) - 'a' + 1;
+        int row = Character.getNumericValue(line.charAt(0));
+        if (1 > col || col > 8 || 1 > row || row > 8) {
+            return null;
+        }
+
+        return new ChessPosition(row, col);
     }
 }

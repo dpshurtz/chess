@@ -10,6 +10,7 @@ import io.javalin.http.*;
 import service.AdminService;
 import service.GameService;
 import service.UserService;
+import websocket.WebSocketHandler;
 
 /**
  * Creates a chess server using javalin
@@ -30,6 +31,7 @@ public class Server {
             GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
             UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
             ExceptionHandler exceptionHandler = new ExceptionHandler();
+            WebSocketHandler webSocketHandler = new WebSocketHandler();
 
             javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -45,6 +47,13 @@ public class Server {
             // Register exception handlers
             javalin.exception(HttpResponseException.class, exceptionHandler::httpExceptionHandler);
             javalin.exception(DataAccessException.class, exceptionHandler::dataExceptionHandler);
+
+            // Register websocket handler
+            javalin.ws("/ws", ws -> {
+                ws.onConnect(webSocketHandler);
+                ws.onMessage(webSocketHandler);
+                ws.onClose(webSocketHandler);
+            });
         }
         catch (DataAccessException e) {
             throw new RuntimeException(e);
