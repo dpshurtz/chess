@@ -10,7 +10,8 @@ import java.lang.reflect.Type;
 public class MessageDeserializer implements JsonDeserializer<ServerMessage> {
 
     @Override
-    public ServerMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+    public ServerMessage deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext)
+            throws JsonParseException {
         String serverMessageType = jsonElement.getAsJsonObject().get("serverMessageType").getAsString();
 
         return switch (serverMessageType) {

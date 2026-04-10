@@ -75,7 +75,10 @@ public class GameTracker {
                 gameData.game()));
     }
 
-    public void resign(String username) throws DataAccessException {
+    public void resign(String username) throws DataAccessException, InvalidMoveException {
+        if (getTeam(username) == null || gameData.game().isOver()) {
+            throw new InvalidMoveException();
+        }
         gameData.game().resign(getTeam(username));
         gameDAO.updateGame(new GameData(
                 gameData.gameID(),

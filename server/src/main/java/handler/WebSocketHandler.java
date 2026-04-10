@@ -118,6 +118,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         catch (DataAccessException | NullPointerException e) {
             connections.unicast(session, new ErrorMessage("unauthorized"));
         }
+        catch (InvalidMoveException e) {
+            connections.unicast(session, new ErrorMessage("can't resign"));
+        }
     }
 
     private void makeMove(MakeMoveCommand action, Session session) throws IOException {

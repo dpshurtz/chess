@@ -10,7 +10,8 @@ import java.lang.reflect.Type;
 public class CommandDeserializer implements JsonDeserializer<UserGameCommand> {
 
     @Override
-    public UserGameCommand deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+    public UserGameCommand deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext)
+            throws JsonParseException {
         String commandType = jsonElement.getAsJsonObject().get("commandType").getAsString();
 
         return switch (commandType) {

@@ -37,7 +37,7 @@ public class GameManager {
     }
 
     public void resign(int gameID, String username)
-            throws DataAccessException {
+            throws DataAccessException, InvalidMoveException {
         gameTrackers.get(gameID).resign(username);
     }
 
