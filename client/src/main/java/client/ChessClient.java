@@ -6,7 +6,6 @@ import serviceobjects.*;
 import ui.EscapeSequences;
 import ui.UIOption;
 import websocket.ServerMessageHandler;
-import websocket.WebSocketFacade;
 import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 

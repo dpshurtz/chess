@@ -25,18 +25,18 @@ public class GameTracker {
         gameData.game().startup();
     }
 
-    public void joinPerson(Session person, ChessGame.TeamColor team) throws DataAccessException {
-        if (team == ChessGame.TeamColor.WHITE) {
+    public void joinPerson(Session person, String username) throws DataAccessException {
+        if (getTeam(username) == ChessGame.TeamColor.WHITE) {
             whitePlayer = person;
         }
-        else if (team == ChessGame.TeamColor.BLACK) {
+        else if (getTeam(username) == ChessGame.TeamColor.BLACK) {
             blackPlayer = person;
         }
         gameData = gameDAO.getGame(gameData.gameID());
     }
 
-    public void leavePerson(Session person, ChessGame.TeamColor team) throws DataAccessException {
-        if (team == ChessGame.TeamColor.WHITE) {
+    public void leavePerson(Session person, String username) throws DataAccessException {
+        if (getTeam(username) == ChessGame.TeamColor.WHITE) {
             whitePlayer = null;
             GameData newGameData = new GameData(
                     gameData.gameID(),
@@ -47,7 +47,7 @@ public class GameTracker {
             gameDAO.updateGame(newGameData);
             gameData = newGameData;
         }
-        else if (team == ChessGame.TeamColor.BLACK) {
+        else if (getTeam(username) == ChessGame.TeamColor.BLACK) {
             blackPlayer = null;
             GameData newGameData = new GameData(
                     gameData.gameID(),
@@ -60,9 +60,9 @@ public class GameTracker {
         }
     }
 
-    public void makeMove(Session person, ChessMove move)
+    public void makeMove(Session person, ChessMove move, String username)
             throws InvalidMoveException, DataAccessException {
-        if (gameData.game().getTeamTurn() != getTeam(person)) {
+        if (gameData.game().getTeamTurn() != getTeam(username)) {
             throw new InvalidMoveException();
         }
 
@@ -75,8 +75,8 @@ public class GameTracker {
                 gameData.game()));
     }
 
-    public void resign(ChessGame.TeamColor team) throws DataAccessException {
-        gameData.game().resign(team);
+    public void resign(String username) throws DataAccessException {
+        gameData.game().resign(getTeam(username));
         gameDAO.updateGame(new GameData(
                 gameData.gameID(),
                 gameData.whiteUsername(),
@@ -89,11 +89,11 @@ public class GameTracker {
         return gameData.game();
     }
 
-    private ChessGame.TeamColor getTeam(Session person) {
-        if (person.equals(blackPlayer)) {
+    public ChessGame.TeamColor getTeam(String username) {
+        if (username.equals(gameData.blackUsername())) {
             return ChessGame.TeamColor.BLACK;
         }
-        if (person.equals(whitePlayer)) {
+        if (username.equals(gameData.whiteUsername())) {
             return ChessGame.TeamColor.WHITE;
         }
         return null;

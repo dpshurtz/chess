@@ -1,4 +1,4 @@
-package websocket;
+package client;
 
 import chess.ChessGame;
 import chess.ChessMove;
@@ -15,12 +15,12 @@ import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.MessageHandler;
 
 import jakarta.websocket.*;
+import websocket.ServerMessageHandler;
 import websocket.commands.GetValidMovesCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.StandardGameCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.MessageDeserializer;
-import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;

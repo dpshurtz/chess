@@ -3,7 +3,6 @@ package handler;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dataaccess.DataAccessException;
 import io.javalin.websocket.WsCloseContext;
@@ -15,7 +14,6 @@ import io.javalin.websocket.WsMessageHandler;
 import org.eclipse.jetty.websocket.api.Session;
 import server.GameManager;
 import server.GameTracker;
-import websocket.ConnectionManager;
 import websocket.commands.*;
 import websocket.messages.*;
 
@@ -28,7 +26,7 @@ import java.util.Collection;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
-    private final ConnectionManager connections = new ConnectionManager();
+    private final GameManager.ConnectionManager connections = new GameManager.ConnectionManager();
     private final GameManager gameManager;
     private final AuthDAO authDAO;
 
@@ -70,11 +68,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(StandardGameCommand action, Session session) throws IOException {
         connections.add(action.getGameID(), session);
         try {
-            gameManager.joinPerson(action.getGameID(), session, action.getTeam());
+            String username = authDAO.getAuth(action.getAuthToken()).username();
+            gameManager.joinPerson(action.getGameID(), session, username);
             var message = String.format(
                     "%s joined the game as %s",
-                    authDAO.getAuth(action.getAuthToken()).username(),
-                    teamToString(action.getTeam())
+                    username,
+                    teamToString(gameManager.getTeam(action.getGameID(), username))
             );
 
             var notification = new NotificationMessage(message);
@@ -84,51 +83,54 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     new LoadGameMessage(gameManager.getGame(action.getGameID()).getBoard());
             connections.unicast(session, loadGameMessage);
         }
-        catch (DataAccessException e) {
-            throw new RuntimeException(e);
+        catch (DataAccessException | NullPointerException e) {
+            connections.unicast(session, new ErrorMessage("unauthorized"));
         }
     }
 
     private void leave(StandardGameCommand action, Session session) throws IOException {
         try {
+            String username = authDAO.getAuth(action.getAuthToken()).username();
             var message = String.format(
                     "%s left the game",
-                    authDAO.getAuth(action.getAuthToken()).username()
+                    username
             );
             var notification = new NotificationMessage(message);
             connections.broadcast(action.getGameID(), session, notification);
             connections.remove(action.getGameID(), session);
-            gameManager.leavePerson(action.getGameID(), session, action.getTeam());
+            gameManager.leavePerson(action.getGameID(), session, username);
         }
-        catch (DataAccessException e) {
-            throw new RuntimeException(e);
+        catch (DataAccessException | NullPointerException e) {
+            connections.unicast(session, new ErrorMessage("unauthorized"));
         }
     }
 
     private void resign(StandardGameCommand action, Session session) throws IOException {
         try {
-            gameManager.resign(action.getGameID(), action.getTeam());
+            String username = authDAO.getAuth(action.getAuthToken()).username();
+            gameManager.resign(action.getGameID(), username);
             var message = String.format("%s resigned from the game",
-                    authDAO.getAuth(action.getAuthToken()).username()
+                    username
             );
             var notification = new NotificationMessage(message);
-            connections.broadcast(action.getGameID(), session, notification);
+            connections.broadcast(action.getGameID(), null, notification);
         }
-        catch (DataAccessException e) {
-            throw new RuntimeException(e);
+        catch (DataAccessException | NullPointerException e) {
+            connections.unicast(session, new ErrorMessage("unauthorized"));
         }
     }
 
     private void makeMove(MakeMoveCommand action, Session session) throws IOException {
         try {
-            gameManager.makeMove(action.getGameID(), session, action.getMove());
+            String username = authDAO.getAuth(action.getAuthToken()).username();
+            gameManager.makeMove(action.getGameID(), session, action.getMove(), username);
 
             LoadGameMessage loadGameMessage =
                     new LoadGameMessage(gameManager.getGame(action.getGameID()).getBoard());
             connections.broadcast(action.getGameID(), null, loadGameMessage);
 
             var message = String.format("%s made the move: %s",
-                    authDAO.getAuth(action.getAuthToken()).username(),
+                    username,
                     action.getMove().toString()
             );
             var notification = new NotificationMessage(message);
@@ -151,8 +153,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             notification = new NotificationMessage(message);
             connections.broadcast(action.getGameID(), null, notification);
         }
-        catch (DataAccessException e) {
-            throw new RuntimeException(e);
+        catch (DataAccessException | NullPointerException e) {
+            connections.unicast(session, new ErrorMessage("unauthorized"));
         }
         catch (InvalidMoveException e) {
             connections.unicast(session, new ErrorMessage("invalid move"));
