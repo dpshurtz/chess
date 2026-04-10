@@ -31,10 +31,14 @@ public class ChessGame {
     private transient ChessPosition kingPosBlack;
 
     // Indicates validity of special moves
-    private transient final SpecialMoveValidator validator = new SpecialMoveValidator();
+    private final SpecialMoveValidator validator = new SpecialMoveValidator();
 
     public ChessGame() {
         board.resetBoard();
+        startup();
+    }
+
+    public void startup() {
         movementLinesByOrigin = board.getMovementLines();
         resetAllAttacks();
         setKingPositions();
@@ -184,6 +188,19 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         return (!isInCheck(teamColor) && hasNoValidMoves(teamColor));
     }
+
+    public boolean isCheck() {
+        return isInCheck(teamTurn);
+    }
+
+    public boolean isCheckmate() {
+        return isInCheckmate(teamTurn);
+    }
+
+    public boolean isStalemate() {
+        return isInStalemate(teamTurn);
+    }
+
 
     /**
      * Sets this game's chessboard with a given board

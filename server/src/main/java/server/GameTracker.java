@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GameTracker {
 
-    private final GameData gameData;
+    private GameData gameData;
     private final GameDAO gameDAO;
     private Session whitePlayer = null;
     private Session blackPlayer = null;
@@ -21,35 +22,41 @@ public class GameTracker {
     public GameTracker(GameData gameData, GameDAO gameDAO) {
         this.gameData = gameData;
         this.gameDAO = gameDAO;
+        gameData.game().startup();
     }
 
-    public void joinPerson(Session person, ChessGame.TeamColor team) {
+    public void joinPerson(Session person, ChessGame.TeamColor team) throws DataAccessException {
         if (team == ChessGame.TeamColor.WHITE) {
             whitePlayer = person;
         }
         else if (team == ChessGame.TeamColor.BLACK) {
             blackPlayer = person;
         }
+        gameData = gameDAO.getGame(gameData.gameID());
     }
 
     public void leavePerson(Session person, ChessGame.TeamColor team) throws DataAccessException {
         if (team == ChessGame.TeamColor.WHITE) {
             whitePlayer = null;
-            gameDAO.updateGame(new GameData(
+            GameData newGameData = new GameData(
                     gameData.gameID(),
                     null,
                     gameData.blackUsername(),
                     gameData.gameName(),
-                    gameData.game()));
+                    gameData.game());
+            gameDAO.updateGame(newGameData);
+            gameData = newGameData;
         }
         else if (team == ChessGame.TeamColor.BLACK) {
             blackPlayer = null;
-            gameDAO.updateGame(new GameData(
+            GameData newGameData = new GameData(
                     gameData.gameID(),
                     gameData.whiteUsername(),
                     null,
                     gameData.gameName(),
-                    gameData.game()));
+                    gameData.game());
+            gameDAO.updateGame(newGameData);
+            gameData = newGameData;
         }
     }
 
@@ -90,5 +97,38 @@ public class GameTracker {
             return ChessGame.TeamColor.WHITE;
         }
         return null;
+    }
+
+    public GameState getGameState() {
+        if (gameData.game().isCheckmate()) {
+            return GameState.CHECKMATE;
+        }
+        if (gameData.game().isCheck()) {
+            return GameState.CHECK;
+        }
+        if (gameData.game().isStalemate()) {
+            return GameState.STALEMATE;
+        }
+        return GameState.NONE;
+    }
+
+    public String getNextPlayer() {
+        if (gameData.game().getTeamTurn() == ChessGame.TeamColor.WHITE) {
+            return gameData.whiteUsername();
+        }
+        else {
+            return gameData.blackUsername();
+        }
+    }
+
+    public Collection<ChessMove> getValidMoves(ChessPosition origin) {
+        return gameData.game().validMoves(origin);
+    }
+
+    public enum GameState {
+        CHECK,
+        CHECKMATE,
+        STALEMATE,
+        NONE
     }
 }

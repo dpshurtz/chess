@@ -2,12 +2,12 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
-import chess.InvalidMoveException;
+import chess.ChessPosition;import chess.InvalidMoveException;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import org.eclipse.jetty.websocket.api.Session;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;import java.util.concurrent.ConcurrentHashMap;
 
 public class GameManager {
     ConcurrentHashMap<Integer, GameTracker> gameTrackers = new ConcurrentHashMap<>();
@@ -40,5 +40,17 @@ public class GameManager {
 
     public ChessGame getGame(int gameID) {
         return gameTrackers.get(gameID).getGame();
+    }
+
+    public GameTracker.GameState getGameState(int gameID) {
+        return gameTrackers.get(gameID).getGameState();
+    }
+
+    public String getNextPlayer(int gameID) {
+        return gameTrackers.get(gameID).getNextPlayer();
+    }
+
+    public Collection<ChessMove> getValidMoves(Integer gameID, ChessPosition origin) {
+        return gameTrackers.get(gameID).getValidMoves(origin);
     }
 }

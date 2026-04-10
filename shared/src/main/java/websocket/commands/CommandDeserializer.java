@@ -18,6 +18,8 @@ public class CommandDeserializer implements JsonDeserializer<UserGameCommand> {
                     jsonDeserializationContext.deserialize(jsonElement, StandardGameCommand.class);
             case "MAKE_MOVE" ->
                     jsonDeserializationContext.deserialize(jsonElement, MakeMoveCommand.class);
+            case "GET_VALID_MOVES" ->
+                    jsonDeserializationContext.deserialize(jsonElement, GetValidMovesCommand.class);
             default ->
                     jsonDeserializationContext.deserialize(jsonElement, UserGameCommand.class);
         };

@@ -20,6 +20,8 @@ public class MessageDeserializer implements JsonDeserializer<ServerMessage> {
                     jsonDeserializationContext.deserialize(jsonElement, ErrorMessage.class);
             case "NOTIFICATION" ->
                     jsonDeserializationContext.deserialize(jsonElement, NotificationMessage.class);
+            case "VALID_MOVES" ->
+                    jsonDeserializationContext.deserialize(jsonElement, ValidMovesMessage.class);
             default ->
                     jsonDeserializationContext.deserialize(jsonElement, ServerMessage.class);
         };

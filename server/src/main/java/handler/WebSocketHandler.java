@@ -14,11 +14,9 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import org.eclipse.jetty.websocket.api.Session;
 import server.GameManager;
+import server.GameTracker;
 import websocket.ConnectionManager;
-import websocket.commands.CommandDeserializer;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.StandardGameCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.*;
 
 
@@ -26,6 +24,7 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 
 import java.io.IOException;
+import java.util.Collection;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -55,7 +54,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case CONNECT -> connect((StandardGameCommand) action, ctx.session);
                 case LEAVE -> leave((StandardGameCommand) action, ctx.session);
                 case RESIGN -> resign((StandardGameCommand) action, ctx.session);
-                case MAKE_MOVE -> make_move((MakeMoveCommand)action, ctx.session);
+                case MAKE_MOVE -> makeMove((MakeMoveCommand)action, ctx.session);
+                case GET_VALID_MOVES -> getValidMoves((GetValidMovesCommand)action, ctx.session);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -72,8 +72,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             gameManager.joinPerson(action.getGameID(), session, action.getTeam());
             var message = String.format(
-                    "%s joined the game",
-                    authDAO.getAuth(action.getAuthToken()).username()
+                    "%s joined the game as %s",
+                    authDAO.getAuth(action.getAuthToken()).username(),
+                    teamToString(action.getTeam())
             );
 
             var notification = new NotificationMessage(message);
@@ -118,7 +119,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void make_move(MakeMoveCommand action, Session session) throws IOException {
+    private void makeMove(MakeMoveCommand action, Session session) throws IOException {
         try {
             gameManager.makeMove(action.getGameID(), session, action.getMove());
 
@@ -132,6 +133,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             );
             var notification = new NotificationMessage(message);
             connections.broadcast(action.getGameID(), session, notification);
+
+            GameTracker.GameState gameState = gameManager.getGameState(action.getGameID());
+            if (gameState == GameTracker.GameState.NONE) {
+                return;
+            }
+
+            message = String.format(
+                    "%s is in ",
+                    gameManager.getNextPlayer(action.getGameID())
+            );
+            switch (gameState) {
+                case CHECK -> message += "check!";
+                case CHECKMATE -> message += "checkmate!";
+                case STALEMATE -> message += "stalemate!";
+            }
+            notification = new NotificationMessage(message);
+            connections.broadcast(action.getGameID(), null, notification);
         }
         catch (DataAccessException e) {
             throw new RuntimeException(e);
@@ -141,4 +159,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
+    private void getValidMoves(GetValidMovesCommand action, Session session) throws IOException {
+        Collection<ChessMove> validMoves =
+                gameManager.getValidMoves(action.getGameID(), action.getOrigin());
+        connections.unicast(session, new ValidMovesMessage(validMoves));
+    }
+
+    private String teamToString(ChessGame.TeamColor team) {
+        if (team == null) {
+            return "an observer";
+        }
+        return switch (team) {
+            case WHITE -> "white";
+            case BLACK -> "black";
+        };
+    }
 }
