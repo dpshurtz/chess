@@ -1,16 +1,13 @@
 package server;
 
 import dataaccess.*;
-import handler.AdminHandler;
+import handler.*;
 import handler.ExceptionHandler;
-import handler.GameHandler;
-import handler.UserHandler;
 import io.javalin.*;
 import io.javalin.http.*;
 import service.AdminService;
 import service.GameService;
 import service.UserService;
-import websocket.WebSocketHandler;
 
 /**
  * Creates a chess server using javalin
@@ -31,7 +28,7 @@ public class Server {
             GameHandler gameHandler = new GameHandler(new GameService(authDAO, gameDAO));
             UserHandler userHandler = new UserHandler(new UserService(authDAO, userDAO));
             ExceptionHandler exceptionHandler = new ExceptionHandler();
-            WebSocketHandler webSocketHandler = new WebSocketHandler();
+            WebSocketHandler webSocketHandler = new WebSocketHandler(authDAO, gameDAO);
 
             javalin = Javalin.create(config -> config.staticFiles.add("web"));
 

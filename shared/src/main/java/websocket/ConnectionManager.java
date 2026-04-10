@@ -3,6 +3,7 @@ package websocket;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,7 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcast(int gameID, Session excludeSession, NotificationMessage notification) throws IOException {
+    public void broadcast(int gameID, Session excludeSession, ServerMessage notification) throws IOException {
         String msg = new Gson().toJson(notification);
         for (Session c : connections.get(gameID).values()) {
             if (c.isOpen()) {
@@ -36,6 +37,13 @@ public class ConnectionManager {
                     c.getRemote().sendString(msg);
                 }
             }
+        }
+    }
+
+    public void unicast(Session session, ServerMessage notification) throws IOException {
+        String msg = new Gson().toJson(notification);
+        if (session.isOpen()) {
+            session.getRemote().sendString(msg);
         }
     }
 }

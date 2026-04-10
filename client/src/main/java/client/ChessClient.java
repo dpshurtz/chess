@@ -5,16 +5,19 @@ import exception.ResponseException;
 import serviceobjects.*;
 import ui.EscapeSequences;
 import ui.UIOption;
-import websocket.NotificationHandler;
+import websocket.ServerMessageHandler;
 import websocket.WebSocketFacade;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
-public class ChessClient implements NotificationHandler {
+public class ChessClient implements ServerMessageHandler {
 
     private final ServerFacade server;
     private final WebSocketFacade ws;
@@ -26,6 +29,7 @@ public class ChessClient implements NotificationHandler {
 
     private int currentGameID;
     private ChessGame.TeamColor currentTeam;
+    private ChessBoard currentBoard = null;
 
     private ArrayList<UIOption> preLoginOptions;
     private ArrayList<UIOption> postLoginOptions;
@@ -41,8 +45,18 @@ public class ChessClient implements NotificationHandler {
     }
 
     @Override
-    public void notify(NotificationMessage notification) {
-        System.out.println(notification.getMessage());
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION ->
+                    System.out.println(((NotificationMessage)message).getMessage());
+            case ERROR ->
+                    System.out.println(((ErrorMessage)message).getMessage());
+            case LOAD_GAME -> {
+                currentBoard = ((LoadGameMessage)message).getGameBoard();
+                displayGame(currentTeam);
+            }
+        }
+
     }
 
     public enum ClientState {
@@ -258,9 +272,8 @@ public class ChessClient implements NotificationHandler {
 
         try {
             server.joinGame(request, authToken);
-            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID);
+            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID, currentTeam);
 
-            displayGame(currentGameID, currentTeam);
             state = ClientState.IN_GAME;
         }
         catch (ResponseException e) {
@@ -319,12 +332,11 @@ public class ChessClient implements NotificationHandler {
         currentTeam = null;
 
         try {
-            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID);
+            ws.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, currentGameID, null);
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
 
-        displayGame(currentGameID, ChessGame.TeamColor.WHITE);
         state = ClientState.IN_GAME;
     }
 
@@ -348,7 +360,7 @@ public class ChessClient implements NotificationHandler {
     }
 
     private void redrawChessboard() {
-        displayGame(currentGameID, Objects.requireNonNullElse(currentTeam, ChessGame.TeamColor.WHITE));
+        displayGame(Objects.requireNonNullElse(currentTeam, ChessGame.TeamColor.WHITE));
     }
 
     private void makeMove() {
@@ -376,7 +388,7 @@ public class ChessClient implements NotificationHandler {
     private void resign() {
         System.out.println("resigning");
         try {
-            ws.sendCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID);
+            ws.sendCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID, currentTeam);
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
@@ -389,7 +401,7 @@ public class ChessClient implements NotificationHandler {
     private void leaveGame() {
         System.out.println("leaving game");
         try {
-            ws.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID);
+            ws.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID, currentTeam);
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
@@ -402,9 +414,10 @@ public class ChessClient implements NotificationHandler {
         }
     }
 
-    private void displayGame(int gameID, ChessGame.TeamColor team) {
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
+    private void displayGame(ChessGame.TeamColor team) {
+        if (currentBoard == null) {
+            return;
+        }
 
         int[] rows, cols;
         if (team == ChessGame.TeamColor.WHITE) {
@@ -418,7 +431,7 @@ public class ChessClient implements NotificationHandler {
 
         for (int row : rows) {
             for (int col : cols) {
-                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+                ChessPiece piece = currentBoard.getPiece(new ChessPosition(row, col));
 
                 if ((row + col)%2 == 1) {
                     System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
@@ -475,7 +488,7 @@ public class ChessClient implements NotificationHandler {
         }
 
         int col = Character.toLowerCase(line.charAt(0)) - 'a' + 1;
-        int row = Character.getNumericValue(line.charAt(0));
+        int row = Character.getNumericValue(line.charAt(1));
         if (1 > col || col > 8 || 1 > row || row > 8) {
             return null;
         }

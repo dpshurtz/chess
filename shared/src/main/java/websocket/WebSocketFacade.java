@@ -1,7 +1,9 @@
 package websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import exception.ResponseException;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.Session;
@@ -13,8 +15,11 @@ import jakarta.websocket.MessageHandler;
 
 import jakarta.websocket.*;
 import websocket.commands.MakeMoveCommand;
+import websocket.commands.StandardGameCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.MessageDeserializer;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,13 +29,13 @@ import java.net.URISyntaxException;
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-    NotificationHandler notificationHandler;
+    ServerMessageHandler serverMessageHandler;
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
+    public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.notificationHandler = notificationHandler;
+            this.serverMessageHandler = serverMessageHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -39,8 +44,11 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                    notificationHandler.notify(notification);
+                    ServerMessage serverMessage = new GsonBuilder()
+                            .registerTypeAdapter(ServerMessage.class, new MessageDeserializer())
+                            .create()
+                            .fromJson(message, ServerMessage.class);
+                    serverMessageHandler.notify(serverMessage);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -62,9 +70,9 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void sendCommand(UserGameCommand.CommandType commandType, String authToken, int gameID) throws ResponseException {
+    public void sendCommand(UserGameCommand.CommandType commandType, String authToken, int gameID, ChessGame.TeamColor team) throws ResponseException {
         try {
-            var action = new UserGameCommand(commandType, authToken, gameID);
+            var action = new StandardGameCommand(commandType, authToken, gameID, team);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());

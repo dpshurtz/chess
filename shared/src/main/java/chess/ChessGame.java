@@ -15,6 +15,8 @@ public class ChessGame {
 
     private ChessBoard board = new ChessBoard();
     private TeamColor teamTurn = TeamColor.WHITE;
+    private TeamColor winner = null;
+    private boolean isOver = false;
 
     // Maps to track which squares are attacked along which lines
     private transient HashMap<ChessPosition, HashSet<MovementLine>> movementLinesByOrigin;
@@ -37,6 +39,14 @@ public class ChessGame {
         resetAllAttacks();
         setKingPositions();
         findAllValidMoves();
+    }
+
+    public boolean isOver() {
+        return isOver;
+    }
+
+    public TeamColor getWinner() {
+        return winner;
     }
 
     /**
@@ -84,6 +94,10 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (isOver) {
+            throw new InvalidMoveException();
+        }
+
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if (piece == null || piece.getTeamColor() != teamTurn) {
             throw new InvalidMoveException();
@@ -121,7 +135,23 @@ public class ChessGame {
         resetAllAttacks();
         findAllValidMoves();
 
+        // Determine if the game was won
+        if (isInCheckmate(enemyTeam(teamTurn))) {
+            winner = teamTurn;
+            isOver = true;
+        }
+        else if (isInStalemate(enemyTeam(teamTurn))) {
+            isOver = true;
+        }
+
         teamTurn = enemyTeam(teamTurn);
+    }
+
+    public void resign(TeamColor team) {
+        if (!isOver) {
+            winner = enemyTeam(team);
+            isOver = true;
+        }
     }
 
     /**
