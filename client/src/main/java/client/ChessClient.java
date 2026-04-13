@@ -408,6 +408,22 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     private void resign() {
+        System.out.println("0 - no");
+        System.out.println("1 - yes");
+        System.out.println("Are you sure you want to resign? >> ");
+
+        String line = scanner.nextLine();
+        if (line.isBlank()) {
+            System.out.println("invalid");
+            return;
+        }
+
+        int index = Character.getNumericValue(line.charAt(0));
+
+        if (index != 1) {
+            return;
+        }
+
         System.out.println("resigning");
         try {
             ws.sendCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID, currentTeam);
